@@ -1,0 +1,131 @@
+﻿
+using SmartFlow.Shared.Data.DataModels;
+using SmartFlow.Shared.DataTemplates;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Mappers.Db_ViewModel;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Models.Ede.Enums;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.Views;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared.ViewModels
+{
+    /// <summary>
+    /// Declaration View Model
+    /// </summary>
+    public class DeclarationViewModel : BaseViewModel
+    {
+        private static string TAG = "DeclarationViewModel";
+        
+        private Declaration _declarationTemplate = null;
+
+        public Declaration_Dbo Db_Declaration { get; set; }
+
+        public List<Chapter> Chapters = new List<Chapter>();
+
+        public int SelectedProfileId { get; set; }
+
+        /// <summary>
+        /// Declaration view model constructor
+        /// </summary>
+        /// <param name="navigate"></param>
+        public DeclarationViewModel(InfoHolder infoHolder)
+        {
+            SelectedProfileId = infoHolder.ProfileId;
+
+            if (infoHolder.DeclarationIds != null && infoHolder.DeclarationIds[0] != 0)
+            {
+                var declaration = DeclarationTemplate;
+                Db_Declaration = _declarationsRepository.GetDeclarationByIdAsync(infoHolder.DeclarationIds[0]).Result;
+                ViewModelMapper.MapDeclarationToViewModel(Db_Declaration, declaration);
+                Declarations = new List<Declaration>() { declaration };
+            }
+            else
+            {
+                Declarations = new List<Declaration>() { InitializeDeclarationTemplate() };
+            }
+        }
+
+        public DeclarationViewModel()
+        {
+
+        }
+
+        /// <summary>
+        /// Get current declaration object
+        /// </summary>
+        public Declaration DeclarationTemplate
+        {
+            get
+            {
+                //if (_declarationTemplate == null)
+                //{
+                    _declarationTemplate = DataTemplates.DeclarationTemplate.CreateDeclaration();
+                    _declarationTemplate.Profile = ProfileTemplate.CreateProfile(); //_profilesRepository.GetProfileByIdAsync(1).Result;
+                //}
+                return _declarationTemplate;
+            }
+            set
+            {
+                OnPropertyChanged();
+            }
+        }
+
+        public Declaration InitializeDeclarationTemplate()
+        {
+            var declaration = DeclarationTemplate;
+            var dbProfile = GetProfileById(SelectedProfileId).Result;
+            ViewModelMapper.MapProfileToViewModel(dbProfile, declaration.Profile);
+            declaration.ProfileId = dbProfile.Id;
+            return declaration;
+        }
+       
+
+        /// <summary>
+        /// Sort the declarations based on type
+        /// </summary>
+        /// <param name="declaration"></param>
+        public void SortQuestions(Declaration declaration)
+        {
+            declaration.Chapters.ForEach(j =>
+            {
+                j.Questions = j.Questions.OrderBy(k => k.Order).ToList();
+            });
+        }
+       
+        public async Task AddDeclaration()
+        {
+            IsLoading = true;
+            foreach (var declaration in Declarations)
+            {
+                declaration.DeclarationType = DeclarationType.Draft;
+                Db_Declaration = new Declaration_Dbo();
+                DBMapper.MapDeclarationToDB(declaration, Db_Declaration,true);
+                await _declarationsRepository.AddDeclarationAsync(Db_Declaration);
+                declaration.Id = Db_Declaration.Id;
+            }
+            IsLoading = false;
+        }
+
+        public async Task UpdateDeclaration()
+        {
+            IsLoading = true;
+            foreach (var declaration in Declarations)
+            {
+                Db_Declaration = _declarationsRepository.GetDeclarationByIdAsync(declaration.Id).Result;
+                DBMapper.MapDeclarationToDB(declaration, Db_Declaration);
+                await _declarationsRepository.UpdateDeclarationAsync(Db_Declaration);
+            }
+            IsLoading = false;
+        }
+    }
+}

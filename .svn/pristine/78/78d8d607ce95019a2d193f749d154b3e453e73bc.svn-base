@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFlow.Shared.Views.HeaderViewBig"
+              xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared">
+    <ContentView.Content>
+        <Grid BackgroundColor="{StaticResource SmartFlow_Header_Color}" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+            <StackLayout Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Padding="0" x:Name="Header1">
+                <Grid VerticalOptions="CenterAndExpand">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="35*" />
+                        <ColumnDefinition Width="65*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="ica_logo" HorizontalOptions="End" VerticalOptions="CenterAndExpand"/>
+                    <StackLayout Grid.Column="1" Padding="15"  >
+                        <Label x:Name="label1" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                        <Label x:Name="label2" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                        <Label x:Name="label3" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                        <Label x:Name="label4" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                    </StackLayout>
+                </Grid>
+            </StackLayout>
+            <StackLayout Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" x:Name="Header2" IsVisible="False">
+                <Grid VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="80*" />
+                        <RowDefinition Height="20*" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                        <Image Source="Asset22" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Aspect="Fill"/>
+                        <Grid VerticalOptions="CenterAndExpand">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="35*" />
+                                <ColumnDefinition Width="65*" />
+                            </Grid.ColumnDefinitions>
+                            <Image Source="ica_logo" HorizontalOptions="End" VerticalOptions="CenterAndExpand"/>
+                            <StackLayout Grid.Column="1" Padding="15"  >
+                                <Label x:Name="label5" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                                <Label x:Name="label6" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                                <Label x:Name="label7" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                                <Label x:Name="label8" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                            </StackLayout>
+                        </Grid>
+                    </Grid>
+                    <Grid VerticalOptions="CenterAndExpand" Grid.Row="1" HorizontalOptions="CenterAndExpand" >
+                        <Label x:Name="label9" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                    </Grid>
+                </Grid>
+            </StackLayout>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:views="clr-namespace:SmartFlow.Shared.Views"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             x:Class="SmartFlow.Shared.Views.ManageDeclarationPage">
+    <Grid RowSpacing="0" x:Name="pageGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="12*" />
+            <RowDefinition Height="76*" />
+            <RowDefinition Height="12*" />
+        </Grid.RowDefinitions>
+        <StackLayout Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Orientation="Horizontal">
+            <views:HeaderView />
+        </StackLayout>
+        <StackLayout VerticalOptions="Fill" Grid.Row="1">
+            <Grid x:Name="MainGrid" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28*"/>
+                    <ColumnDefinition Width="72*"/>
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal" Grid.Row="2"  Padding="0" Spacing="0">
+            <views:FooterView  x:Name="FooterViewId"/>
+        </StackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,405 @@
+﻿using SmartFlow.Shared.Enums;
+using SmartFlow.Shared.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Footer View
+    /// This class contains footerview used in all screens.
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class FooterView : ContentView
+	{
+        private static string TAG = "FooterView";
+        /// <summary>
+        /// FooterView constructor
+        /// </summary>
+        public FooterView ()
+		{
+			InitializeComponent ();
+            SetPageText();
+		}
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            //footerText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.FOOTER_TEXT);
+        }
+
+        /// <summary>
+        /// Method to set divider visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetDividerVisible(bool makeVisible)
+        {
+            Divider.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Method to set back button visibility
+        /// </summary>
+        public void SetBackButtonVisible(bool makeVisible)
+        {
+            BackButton.IsVisible = makeVisible;
+            if (!makeVisible)
+            {
+                Divider.IsVisible = makeVisible;
+            }
+        }
+
+        /// <summary>
+        /// Set the number navigation bar visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetNavigationBarVisible(bool makeVisible)
+        {
+            NavigationBarGrid.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Method to set the text for the action button.
+        /// Since we need to set the action handler to this button in the parent class, 
+        /// hence we pass the button reference back.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public Button SetButtonHandling(String text)
+        {
+            FooterBtn.IsVisible = true;
+            Divider_End.IsVisible = true;
+            FooterBtn.Text = text;
+            return FooterBtn;
+        }
+
+        /// <summary>
+        /// Method to set the text for the action button.
+        /// Since we need to set the action handler to this button in the parent class, 
+        /// hence we pass the button reference back.
+        /// </summary>
+        /// <param name="imageSource"></param>
+        /// <returns></returns>
+        public Button SetMiddleButtonHandling(String imageSource)
+        {
+            QRImageButton.Image = (FileImageSource)ImageSource.FromFile(imageSource);
+            return QRImageButton;
+        }
+
+        /// <summary>
+        /// Method to set the action button visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetButtonVisible(bool makeVisible)
+        {
+            FooterBtn.IsVisible = makeVisible;
+            Divider_End.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Method to set the action button visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetMiddleButtonVisible(bool makeVisible)
+        {
+            QRImageButton.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Create navigation number pad.
+        /// This handles all the views across the pages and take into account the maximum number of profiles supported.
+        /// </summary>
+        public void CreateNavBar(bool IsPreselect,int PreSelectedIndex, bool IsDeclarationPage,  int DataCount, int NumberPageIndex, 
+            EventHandler NavNextPage, EventHandler NavBackPage, EventHandler OnSelectionForNavBar, EventHandler OnCreateClicked, EnumMaps Mode)
+        {
+            try
+            {
+                // Reset the navigation bar to empty text and no delegation methods attached.
+                ResetNavigationBar(NavNextPage, NavBackPage, OnSelectionForNavBar, OnCreateClicked);
+
+                if (DataCount > 0)
+                {
+                    SetNavigationBarVisible(true);
+
+                    // Calculate max number of pages based on Profile Count.
+                    double value = (DataCount  - Utils.MaxProfilesOnFirstPage) / (double)Utils.MaxProfilesOnOtherPages;
+                    // Max number of pages which would be there for navigation pad. This is based on Profile List count.
+                    int MaxPages = (int)Math.Ceiling(value) + 1;
+
+                    // If Page index is great than 1, then the top left arrow will always be "<"
+                    if (NumberPageIndex > 1)
+                    {
+                        Content.FindByName<Button>("Nav_" + 1).IsVisible = true;
+                        Content.FindByName<Button>("Nav_" + 1).Text = "<";
+                        Content.FindByName<Button>("Nav_" + 1).Clicked += NavBackPage;
+                    }
+
+                    // If Page index is less than max pages, then the bottom right arrow will always be ">"
+                    // Exception to this is only if their is no "+" option on next page and we can adjust last index in this view.
+                    // That is handled in the last where we decide if we need to show "+" button based on various factors.
+                    if (NumberPageIndex < MaxPages)
+                    {
+                        Content.FindByName<Button>("Nav_" + 8).IsVisible = true;
+                        Content.FindByName<Button>("Nav_" + 8).Text = ">";
+                        Content.FindByName<Button>("Nav_" + 8).Clicked += NavNextPage;
+                    }
+
+                    // Based on the page index, we determine what would be the minimum index and maximum index on that page.
+                    int MaxProfileIndex = Utils.MaxProfilesOnFirstPage + ((NumberPageIndex - 1) * Utils.MaxProfilesOnOtherPages);
+                    int MinProfileIndex = NumberPageIndex == 1 ? 1 : (Utils.MaxProfilesOnFirstPage + ((NumberPageIndex - 1) * Utils.MaxProfilesOnOtherPages - 5));
+
+                    // This will control the view nameid and assign the value accordingly
+                    int NavIndex = NumberPageIndex == 1 ? 1 : 2;
+
+                    // Number pad will start from the mimimum index allowed for the current page.
+                    int k = MinProfileIndex;
+
+                    // Based on the index, we start filling the numbers.
+                    for (; k <= MaxProfileIndex; k++)
+                    {
+                        // If index has crossed profile count, then we will break here. As we dont want to add numbers which are not available in profile.
+                        // Since maxIndex was calculated generally and not keeping in mind the total profile count.
+                        if (k > DataCount)
+                        {
+                            break;
+                        }
+
+                        Content.FindByName<Button>("Nav_" + NavIndex).IsVisible = true;
+                        Content.FindByName<Button>("Nav_" + NavIndex).Text = k.ToString();
+                        Content.FindByName<Button>("Nav_" + NavIndex).Clicked += OnSelectionForNavBar;
+
+                        if (IsPreselect)
+                        {
+                            // If k is profile index, then color that item as selected.
+                            if (k == PreSelectedIndex)
+                            {
+                                Content.FindByName<Button>("Nav_" + NavIndex).BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                                Content.FindByName<Button>("Nav_" + NavIndex).TextColor = Color.White;
+                            }
+                        }
+
+                        NavIndex++;
+                    }
+
+                    // Change request 16 Jan 2018 : Need to remove "Add" profile option from create and manage declarations.
+                    // Not having any create profile for Create or Manage Declarations scenario
+
+                    // If k is greater than profile count and total profile count is less than allowed profiles
+                    // And we are not in Declaration mode (As now allowed to add profile there)
+                    // We will add "+" in the last navigation coloum.
+                    if (k > DataCount && DataCount < (IsDeclarationPage ? Utils.MAXIMUM_TRIPS_ALLOWED_ONE_TIME : Utils.MAXIMUM_PROFILES_ALLOWED) && 
+                        IsDeclarationPage? (Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN) : (Mode != Enums.EnumMaps.MANAGE_DECLARATION && Mode != Enums.EnumMaps.CREATE_DECLARATION))
+                    {
+                        Content.FindByName<Button>("Nav_" + NavIndex).IsVisible = true;
+                        Content.FindByName<Button>("Nav_" + NavIndex).Text = "+";
+                        Content.FindByName<Button>("Nav_" + NavIndex).Clicked += OnCreateClicked;
+                    }
+                    else
+                    {
+                        // In case we have not added "+" in the last column, and last column is ">", we will handle the case explained where we inserted the ">" item.
+                        if (NavIndex == 8 && Content.FindByName<Button>("Nav_" + NavIndex).Text == ">")
+                        {
+                            // In case k has reached either Max profiles allowed or k has reached profile count and mode is Declration, 
+                            // we wll not be adding "+" , hence we dont need next page and hence not the arrow. So replace arrow with the last available index
+                            if (k == (IsDeclarationPage ? Utils.MAXIMUM_TRIPS_ALLOWED_ONE_TIME : Utils.MAXIMUM_PROFILES_ALLOWED) || (k == DataCount && 
+                                (IsDeclarationPage ? (Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN) : (Mode == Enums.EnumMaps.MANAGE_DECLARATION || Mode == Enums.EnumMaps.CREATE_DECLARATION))))
+                            {
+                                Content.FindByName<Button>("Nav_" + NavIndex).Clicked -= NavNextPage;
+                                Content.FindByName<Button>("Nav_" + NavIndex).IsVisible = true;
+                                Content.FindByName<Button>("Nav_" + NavIndex).Text = k.ToString();
+                                Content.FindByName<Button>("Nav_" + NavIndex).Clicked += OnSelectionForNavBar;
+
+                                if (IsPreselect)
+                                {
+                                    // If k is profile index, then color that item as selected.
+                                    if (k == PreSelectedIndex)
+                                    {
+                                        Content.FindByName<Button>("Nav_" + NavIndex).BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                                        Content.FindByName<Button>("Nav_" + NavIndex).TextColor = Color.White;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    SetNavigationBarVisible(false);
+                }
+            }
+            catch (Exception e)
+            {
+                LogHandler.AddExceptionLog(TAG, "", e, true);
+            }
+        }
+
+        /// <summary>
+        /// Resets the Navigation bar to default
+        /// </summary>
+        /// <param name="NavNextPage"></param>
+        /// <param name="NavBackPage"></param>
+        /// <param name="OnSelectionForNavBar"></param>
+        /// <param name="OnCreateClicked"></param>
+        public void ResetNavigationBar(EventHandler NavNextPage, EventHandler NavBackPage, EventHandler OnSelectionForNavBar, EventHandler OnCreateClicked)
+        {
+            for (var k = 1; k <= 8; k++)
+            {
+                if (Content.FindByName<Button>("Nav_" + k).Text == "+")
+                {
+                    Content.FindByName<Button>("Nav_" + k).Clicked -= OnCreateClicked;
+                }
+                else if (Content.FindByName<Button>("Nav_" + k).Text == "<")
+                {
+                    Content.FindByName<Button>("Nav_" + k).Clicked -= NavBackPage;
+                }
+                else if (Content.FindByName<Button>("Nav_" + k).Text == ">")
+                {
+                    Content.FindByName<Button>("Nav_" + k).Clicked -= NavNextPage;
+                }
+                else
+                {
+                    Content.FindByName<Button>("Nav_" + k).Clicked -= OnSelectionForNavBar;
+                }
+                Content.FindByName<Button>("Nav_" + k).Text = "";
+                Content.FindByName<Button>("Nav_" + k).IsVisible = false;
+                Content.FindByName<Button>("Nav_" + k).BackgroundColor = Color.Transparent;
+                Content.FindByName<Button>("Nav_" + k).TextColor = Color.Black;
+            }
+        }
+
+
+        /// <summary>
+        /// Method to remove the click handler for back button and 
+        /// pass the button reference back, so that parent class can set the handler.
+        /// </summary>
+        /// <returns></returns>
+        public Button GetBackButtonAndRemoveClick()
+        {
+            BackButton.Clicked -= OnBackButtonClicked;
+            return BackButton;
+        }
+
+        /// <summary>
+        /// Back button command to be used when user press back arrow in footer view.
+        /// this will navigate back the current page without animation
+        /// </summary>
+        public ICommand BackBtnCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    await App.NavigationService.GoBack(false);
+                });
+            }
+        }
+
+        private void OnBackButtonClicked(object sender, EventArgs e)
+        {
+            BackBtnCommand.Execute(null);
+        }
+
+        private void OnBackButtonPressed(object sender, EventArgs e)
+        {
+            SetBackButtonImage(true);
+        }
+
+        private void OnBackButtonReleased(object sender, EventArgs e)
+        {
+            SetBackButtonImage(false);
+        }
+
+        private void OnBackButtonFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            SetBackButtonImage(btn.IsFocused);
+        }
+
+        private void OnButtonPressed(object sender, EventArgs e)
+        {
+            SetButtonImage(true);
+        }
+
+        private void OnButtonReleased(object sender, EventArgs e)
+        {
+            SetButtonImage(false);
+        }
+
+        private void OnButtonFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+
+            SetButtonImage(btn.IsFocused);
+        }
+
+        private void OnNavBtnPressed(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+            btn.TextColor = Color.White;
+        }
+
+        private void OnNavBtnReleased(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.BackgroundColor = Color.Transparent;
+            btn.TextColor = Color.Black;
+        }
+
+        private void OnNavBtnFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+            btn.TextColor = Color.White;
+        }
+
+        /// <summary>
+        /// Method to set the action button color and text color when pressed
+        /// </summary>
+        /// <param name="isPressed"></param>
+        void SetButtonImage(bool isPressed)
+        {
+            if (isPressed)
+            {
+                FooterBtn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                FooterBtn.TextColor = Color.White;
+                FooterBtn.Image = null;
+            }
+            else
+            {
+                FooterBtn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.yellow_color);
+                FooterBtn.TextColor = Color.Black;
+                FooterBtn.Image = null;
+            }
+        }
+
+        /// <summary>
+        /// Method to set the back button image when pressed
+        /// </summary>
+        /// <param name="isPressed"></param>
+        void SetBackButtonImage(bool isPressed)
+        {
+            if (isPressed)
+            {
+                //BackButton.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                BackButton.TextColor = Color.White;
+                BackButton.Image = (FileImageSource)ImageSource.FromFile("ic_back_arrow_white");
+            }
+            else
+            {
+                //BackButton.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.yellow_color);
+                BackButton.TextColor = Color.Black;
+                BackButton.Image = (FileImageSource)ImageSource.FromFile("ic_back_arrow_blue");
+            }
+        }
+    }
+}

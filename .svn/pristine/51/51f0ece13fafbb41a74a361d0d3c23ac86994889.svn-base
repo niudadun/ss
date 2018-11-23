@@ -1,0 +1,212 @@
+﻿
+using SmartFlow.Shared.DataTemplates;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Models.Ede.Enums;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.Views;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared.ViewModels
+{
+    /// <summary>
+    /// Declaration View Model
+    /// </summary>
+    public class DeclarationViewModel : BaseViewModel
+    {
+        private static string TAG = "DeclarationViewModel";
+        
+        private Declaration _declarationTemplate = null;
+        private List<Declaration> _declarations = null;
+        
+        /// <summary>
+        /// Command for loading declarations
+        /// </summary>
+        public Command LoadDeclarationCommand { get; set; }
+
+        /// <summary>
+        /// Selected profile id, based on which all declarations will be loaded
+        /// </summary>
+        public int SelectedProfileId { get; set; }
+
+        /// <summary>
+        /// Declaration model constructor
+        /// </summary>
+        /// <param name="navigate"></param>
+        public DeclarationViewModel()
+        {
+
+        }
+
+        /// <summary>
+        /// Declaration view model with ID
+        /// </summary>
+        /// <param name="navigate">navigation service</param>
+        /// <param name="Id">selected profile id</param>
+        public DeclarationViewModel(int Id)
+        {
+            CurrentDeclaration = _declarationTemplate = _declarationsRepository.GetDeclarationByIdAsync(Id).Result;
+            SortQuestions(CurrentDeclaration);
+        }
+       
+
+        /// <summary>
+        /// Get current declaration object
+        /// </summary>
+        public Declaration CurrentDeclaration
+        {
+            get
+            {
+                if (_declarationTemplate == null)
+                {
+                    _declarationTemplate = DataTemplates.DeclarationTemplate.CreateDeclaration();
+                    _declarationTemplate.Profile = ProfileTemplate.CreateProfile(); //_profilesRepository.GetProfileByIdAsync(1).Result;
+                }
+                return _declarationTemplate;
+            }
+            set
+            {
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Get list of all declarations from view model
+        /// </summary>
+        public List<Declaration> Declarations
+        {
+            get
+            {
+                try
+                {
+                    if (_declarations == null)
+                    {
+                        _declarations = _declarationsRepository.GetDeclarationByProfileIdAsync(SelectedProfileId).Result.ToList();
+                        _declarations.ForEach(i =>
+                        {
+                            SortQuestions(i);
+                        });
+                    }
+                }
+                catch(Exception ex)
+                {
+                    LogHandler.AddExceptionLog(TAG, "", ex, true);
+                }
+                return _declarations;
+            }
+            set
+            {
+                OnPropertyChanged();
+            }
+        }
+
+       
+
+        /// <summary>
+        /// List of chapters to be filled via declaration data
+        /// </summary>
+        public List<Chapter> Chapters = new List<Chapter>();
+        
+
+        /// <summary>
+        /// load profile answers to the decaration model
+        /// </summary>
+        /// <param name="lstDeclarations"></param>
+        public void LoadProfileAnswers(List<Declaration> lstDeclarations)
+        {
+            var template = ProfileTemplate.CreateProfile();
+            foreach (var declaration in lstDeclarations)
+            {
+                foreach (var ques in declaration.Profile.Chapters[0].Questions)
+                {
+                    foreach (var question in template.Chapters[0].Questions)
+                    {
+                        if (question.QuestionIdentifier == ques.QuestionIdentifier)
+                        {
+                            ques.Answers = question.Answers;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load declaration answers to the declaration model
+        /// </summary>
+        /// <param name="lstDeclarations"></param>
+        public void LoadDeclarationAnswers(List<Declaration> lstDeclarations)
+        {
+            var template = DeclarationTemplate.CreateDeclaration();
+            foreach (var declaration in lstDeclarations)
+            {
+                foreach (var ques in declaration.Chapters[0].Questions)
+                {
+                    foreach (var question in template.Chapters[0].Questions)
+                    {
+                        if (question.QuestionIdentifier == ques.QuestionIdentifier)
+                        {
+                            ques.Answers = question.Answers;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sort the declarations based on type
+        /// </summary>
+        /// <param name="declaration"></param>
+        public void SortQuestions(Declaration declaration)
+        {
+            declaration.Chapters.ForEach(j =>
+            {
+                j.Questions = j.Questions.OrderBy(k => k.Order).ToList();
+            });
+        }
+       
+        public async Task ExecuteAddCommand()
+        {
+            IsLoading = true;
+            CurrentDeclaration.DeclarationType = DeclarationType.Draft;
+            await _declarationsRepository.AddDeclarationAsync(CurrentDeclaration);
+            IsLoading = false;
+        }
+
+        public async Task ExecuteUpdateCommand()
+        {
+            IsLoading = true;
+            await _declarationsRepository.UpdateDeclarationAsync(CurrentDeclaration);
+            IsLoading = false;
+        }
+        /// <summary>
+        /// Function to set answers from answer code and index, when declaration is being saved.
+        /// </summary>
+        public void ModifyAnswers()
+        {
+
+            CurrentDeclaration.Chapters.ForEach(c =>
+            {
+
+                c.Questions.ForEach(i =>
+                {
+                    if (i.Type == QuestionType.DropDown && i.Answers != null && i.Answers.Any())
+                    {
+                        i.AnswerText = i.Answers[i.SelectedAnswerIndex].Text;
+                        i.AnswerCode = i.Answers[i.SelectedAnswerIndex].Code;
+                    }
+                    i.Answers = null;
+                });
+
+            });
+        }
+        
+    }
+}

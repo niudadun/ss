@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Application xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFlow.Shared.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <!--<OnPlatform x:Key="standardFont" x:TypeArguments="Font">
+                <OnPlatform.iOS>12</OnPlatform.iOS>
+                <OnPlatform.Android>12</OnPlatform.Android>
+                <OnPlatform.WinPhone>18</OnPlatform.WinPhone>
+            </OnPlatform>-->
+            <OnPlatform x:TypeArguments="Font" Android="14" iOS="14" WinPhone="18" x:Key="BtnFontSize" />
+            <OnPlatform x:TypeArguments="x:Double" Android="80" iOS="80" WinPhone="100" x:Key="BtnWide" />
+            <OnPlatform x:TypeArguments="x:Double" Android="80" iOS="80" WinPhone="100" x:Key="BtnHeight" />
+            <OnPlatform x:TypeArguments="x:Int32" Android="40" iOS="40" WinPhone="50" x:Key="BtnRadius" />
+            <OnPlatform x:TypeArguments="x:Double" Android="80" iOS="80" WinPhone="100" x:Key="BackBtnWide" />
+            <!--<x:String x:Key=""</x:String>-->
+            <Color x:FactoryMethod="FromHex" x:Key="SmartFlow_Header_Color">
+                <x:Arguments>
+                    <x:String>#345b75</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="SmartFlow_Blue">
+                <x:Arguments>
+                    <x:String>#133957</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="SmartFlow_Yellow">
+                <x:Arguments>
+                    <x:String>#ffd100</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="Footer_Color">
+                <x:Arguments>
+                    <x:String>#ffffff</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="Text_Color">
+                <x:Arguments>
+                    <x:String>#ffffff</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="TextView_Bg">
+                <x:Arguments>
+                    <x:String>#424242</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="Footer_Bg">
+                <x:Arguments>
+                    <x:String>#999999</x:String>
+                </x:Arguments>
+            </Color>
+            <Color x:FactoryMethod="FromHex" x:Key="Divider_Color">
+                <x:Arguments>
+                    <x:String>#e6e6e6</x:String>
+                </x:Arguments>
+            </Color>     
+       
+            <Style x:Key="BackButton" TargetType="Button">
+                <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+                <Setter Property="BackgroundColor" Value="{StaticResource SmartFlow_Yellow}" />
+                <Setter Property="WidthRequest" Value="{StaticResource BackBtnWide}" />
+            </Style>
+            <Style x:Key ="ProfileLabel" TargetType="Label">
+                <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+            </Style>
+                    <!--<Setter Property="BorderWidth" Value="5" />-->
+                <!--<Setter Property="OverridesDefaultStyle" Value="True" />--><!--
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="BorderColor" Value="Red" />
+                <Setter Property="BackgroundColor" Value="{StaticResource SmartFlow_Yellow}" />
+                <Setter Property="BorderRadius" Value="{StaticResource BtnRadius}" />
+                --><!--<Setter Property="BorderWidth" Value="5" />--><!--
+                <Setter Property="WidthRequest" Value="{StaticResource BtnWide}" />
+                <Setter Property="HeightRequest" Value="{StaticResource BtnHeight}" />
+                <Setter Property="FontSize" Value="{StaticResource BtnFontSize}" />
+                --><!--<Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.6" />
+                                </Trigger>
+                                <EventTrigger RoutedEvent="Button.TouchDown">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation AutoReverse="False"
+                                            Duration="0:0:0.05"
+                                            From="1"
+                                            Storyboard.TargetProperty="(UIElement.Opacity)"
+                                            To="0.5" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.TouchUp">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation AutoReverse="False"
+                                            Duration="0:0:0.1"
+                                            From="0.5"
+                                            Storyboard.TargetProperty="(UIElement.Opacity)"
+                                            To="1" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.StylusLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation AutoReverse="False"
+                                            Duration="0:0:0.1"
+                                            From="0.5"
+                                            Storyboard.TargetProperty="(UIElement.Opacity)"
+                                            To="1" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>--><!--
+            </Style>-->
+        </ResourceDictionary>
+
+    </Application.Resources>
+</Application>

@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             xmlns:views="clr-namespace:SmartFlow.Shared.Views"
+             xmlns:ci="clr-namespace:ImageCircle.Forms.Plugin.Abstractions;assembly=ImageCircle.Forms.Plugin.Abstractions" 
+             x:Class="SmartFlow.Shared.Views.ProfilesList">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="12*" />
+            <RowDefinition Height="76*" />
+            <RowDefinition Height="12*" />
+        </Grid.RowDefinitions>
+        <StackLayout Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Orientation="Horizontal" Margin="0" Padding="0">
+            <views:HeaderView />            
+        </StackLayout>
+        <StackLayout x:Name="MaincontentStack" Grid.Row="1" VerticalOptions="FillAndExpand" Padding="10">
+            <ListView CachingStrategy="RecycleElement" RowHeight ="120" SeparatorVisibility="None" 
+                      AutomationId="AutomationId_btnProfileList"  VerticalOptions="FillAndExpand" 
+                      IsVisible="False" x:Name="ProfileList">
+                <!--<ListView.ItemTemplate>
+                    <DataTemplate>
+                        <views:ProfileListItemView/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>-->
+            </ListView>
+            <views:InfoView x:Name="InfoPageId" IsVisible="False" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>            
+        </StackLayout>
+        <StackLayout Orientation="Horizontal" Grid.Row="2" Padding="0" Spacing="0">
+            <views:FooterView x:Name="FooterViewId"/>
+        </StackLayout>
+    </Grid>
+</ContentPage>

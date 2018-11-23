@@ -1,0 +1,102 @@
+﻿using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Respository.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared.ViewModels
+{
+    public class BaseViewModel : INotifyPropertyChanged
+    {
+       
+        protected bool _isLoading;
+        private IEnumerable<Profile> _profiles;
+        protected readonly IProfilesRepository _profilesRepository;
+        protected readonly IDeclarationsRepository _declarationsRepository;
+
+        public BaseViewModel()
+        {
+            _isLoading = IsLoading;
+            _profilesRepository = App._profilesRepository;
+            _declarationsRepository = App._declarationsRepository;
+        }
+        /// <summary>
+        /// Control button enabled or not.
+        /// </summary>
+        public bool IsLoading
+        {
+            get { return _isLoading; }
+
+            set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    OnPropertyChanged("IsLoading");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Profiles list
+        /// </summary>
+        public IEnumerable<Profile> Profiles
+        {
+            get
+            {
+                if (_profiles != null)
+                {
+                    return _profiles.OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase);
+                }
+                else
+                {
+                    return _profiles;
+                }
+            }
+            set
+            {
+                _profiles = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+        public async Task ExecuteLoadItemsCommand()
+        {
+            IsLoading = true;
+            Profiles = await _profilesRepository.GetProfilesAsync();
+            IsLoading = false;
+        }
+
+        /// <summary>
+        /// Gets the refresh database command.
+        /// </summary>
+        /// <value>
+        /// The refresh database command.
+        /// </value>
+        public async Task RefreshDBCommand()
+        {
+            IsLoading = true;
+            await _profilesRepository.RefreshDbContext();
+            IsLoading = false;
+        }
+        /// <summary>
+        /// Method called when any property is changed for the profile list
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Callback for any property change
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}

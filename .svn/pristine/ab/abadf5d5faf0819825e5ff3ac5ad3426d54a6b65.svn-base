@@ -1,0 +1,55 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+
+namespace SmartFlow.Shared.Helpers
+{
+    /// <summary>
+    /// Utils class - Contains all constant values
+    /// </summary>
+    class Utils
+    {
+        private static string TAG = "Utils";
+
+        /// Common Date Format
+        public static string CLIENT_DATE_FORMAT = "dd MM yyyy HH:mm";
+        // This is used to display the date on Profile/Declaration
+        public static string DATE_FORMAT = "dd/MM/yyyy";
+        // This is used when submitting the answers to server or QR data
+        public static string DATE_FORMAT_DECLARATION = "yyyy/MM/dd";
+
+        public static string AUTOMATION_ID = "AutomationId_";
+
+        public static string DEFAULT_PROFILE_PIC = "ic_profile_pic";
+        public static int MAXIMUM_TRIPS_ALLOWED_ONE_TIME = 1;
+
+        /*
+         * Keys for preferences
+         */
+        /// Language Selection Key
+        public static string PREFS_KEY_LANGUAGE_SELECTION = "SelectedLanguage";
+		// App first launch preference key
+        public static string PREFS_KEY_IS_APP_FIRST_LAUNCH = "IsAppFirstLaunch";
+
+
+        public static string RandomString(int length)
+        {
+           return Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, length);
+        }
+
+        public static DateTime GetDateInFormat(DateTime DateValue, string format = null)
+        {
+            try
+            {
+                return DateTime.Parse(DateValue.ToString((format == null || format.Length <= 0) ? Utils.DATE_FORMAT : format));
+            }
+            catch (Exception e)
+            {
+                LogHandler.AddExceptionLog(TAG, "", e, true);
+                return DateValue;
+            }
+        }
+
+    }
+}

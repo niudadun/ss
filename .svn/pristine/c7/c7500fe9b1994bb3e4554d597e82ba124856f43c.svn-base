@@ -1,0 +1,202 @@
+﻿using SmartFlow.Shared.Helpers.Interfaces;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Respository;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ImageCircle.Forms.Plugin.Abstractions;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using SmartFlow.Shared.Converters;
+using SmartFlow.Shared.Helpers;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Language Selection Info Dialog Page
+    /// When user clicks on any Language item in Langauge Selection page, this view is generated
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class LanguageSelectionDialogPage : ContentPage
+	{
+        private static string TAG = "LanguageSelectionDialogPage";
+        Enums.EnumMaps Mode;
+        string LanguageCode;
+
+        /// <summary>
+        /// Language Info page constructor.
+        /// </summary>
+        public LanguageSelectionDialogPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+            
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Language Selection Info Page Constructor
+        /// </summary>
+        public LanguageSelectionDialogPage(InfoHolder infoHolder)
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            Mode = infoHolder.GetMode();
+            if (Mode == Enums.EnumMaps.LANGUAGE_SELECTION)
+            {
+                LanguageCode = infoHolder.GetLanguageCode();
+            }
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            //titleHeader.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST);
+            FooterViewId.IsVisible = false;
+            if (Mode == Enums.EnumMaps.LANGUAGE_SELECTION)
+            {
+                InfoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.LANGUAGE_SELECTION_TEXT, LanguageCode);
+                BtnYes.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.YES_TEXT, LanguageCode);
+                BtnNo.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NO_TEXT, LanguageCode);
+                BtnGrid2.IsVisible = false;
+                BtnGrid1.IsVisible = true;
+            }
+            else if(Mode == Enums.EnumMaps.SUBMIT_ANOTHER_DECLARATION)
+            {
+                InfoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SUBMIT_ANNOTHER_DECLARATION_TEXT);
+                BtnYes.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.YES_TEXT);
+                BtnNo.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NO_TEXT);
+                BtnGrid2.IsVisible = false;
+                BtnGrid1.IsVisible = true;
+            }
+            else if (Mode == Enums.EnumMaps.CONFIRMATION_SCREEN)
+            {
+                InfoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.CONFIRMATION_TOC_TEXT);
+                BtnYes.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.AGREE);
+                BtnNo.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.DISAGREE);
+                BtnGrid2.IsVisible = false;
+                BtnGrid1.IsVisible = true;
+            }
+        }
+
+        /// <summary>
+        /// Update Profile Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnYesClicked(object sender, EventArgs e)
+        {
+            if (Mode == Enums.EnumMaps.LANGUAGE_SELECTION)
+            {
+                Settings.AddOrUpdateValue(Utils.PREFS_KEY_LANGUAGE_SELECTION, LanguageCode);
+                // Not setting the culture of the app, as the keyboard should remains in default language of the device.
+                // We only change language to show label text and queston text. Answers are always in English Text.
+                L10n.SetLanguage();
+
+                if (Device.RuntimePlatform == Device.iOS)
+                {
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        //await App.NavigationService.RemovePages(2);
+                        await App.NavigationService.GoBack(false);
+                        await App.NavigationService.GoBack(false);
+
+                        if (Settings.GetBooleanPreference(Utils.PREFS_KEY_IS_APP_FIRST_LAUNCH))
+                        {
+                           await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPageTutorial.ToString(), false);
+                        }
+                        else
+                        {
+                           await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+                        }
+                    });
+                }
+                else
+                {
+                    // Backing up Language info page and Language selection page.
+                    App.NavigationService.GoBack(false);
+                    App.NavigationService.GoBack(false);
+
+                    if (Settings.GetBooleanPreference(Utils.PREFS_KEY_IS_APP_FIRST_LAUNCH))
+                    {
+                        App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPageTutorial.ToString(), false);
+                    }
+                    else
+                    {
+                        App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+                    }
+                }                
+            }
+            else if (Mode == Enums.EnumMaps.SUBMIT_ANOTHER_DECLARATION)
+            {
+			 	if (Device.RuntimePlatform == Device.iOS)
+                {
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        await App.NavigationService.GoBack(false);
+                        await App.NavigationService.GoBack(false);
+                    });
+                }
+				else
+				{
+                	App.NavigationService.GoBack(false);
+                	App.NavigationService.GoBack(false);
+				}
+            }
+            else if (Mode == Enums.EnumMaps.CONFIRMATION_SCREEN)
+            {
+                App.NavigationService.GoBack(false);
+            }
+        }
+
+        /// <summary>
+        /// Update Profile Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnNoClicked(object sender, EventArgs e)
+        {
+            HandleBack();
+        }
+
+        void HandleBack()
+        {
+            if (Mode == Enums.EnumMaps.LANGUAGE_SELECTION)
+            {
+                App.NavigationService.GoBack(false);
+            }
+            else if (Mode == Enums.EnumMaps.SUBMIT_ANOTHER_DECLARATION)
+            {
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.SuccessPage.ToString(),new InfoHolder(-1,Enums.EnumMaps.TOC_SCREEN), false);
+            }
+            else if (Mode == Enums.EnumMaps.CONFIRMATION_SCREEN)
+            {
+                App.NavigationService.GoBack(false);
+            }
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            HandleBack();
+            return true;
+        }
+    }
+}

@@ -1,0 +1,56 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    ///  Header View class
+    /// This view contains Big header view used in Main page and Menu Page
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class HeaderViewBig : ContentView
+    {
+        private static string TAG = "HeaderViewBig";
+
+        /// <summary>
+        /// HeaderViewBig constructor
+        /// </summary>
+		public HeaderViewBig ()
+		{
+			InitializeComponent ();
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            label1.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_C);
+            label2.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_D);
+            label3.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_E);
+            label4.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_F);
+            label5.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_C);
+            label6.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_D);
+            label7.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_E);
+            label8.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.HEADER_TEXT_F);
+            label9.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.ELECTRONIC_CARD);
+        }
+
+        /// <summary>
+        /// Method to select which header layout needs to be visible based on parent page
+        /// </summary>
+        /// <param name="setFirstHeader"></param>
+        public void SetFirstHeader(bool setFirstHeader)
+        {
+            Header1.IsVisible = setFirstHeader;
+            Header2.IsVisible = !setFirstHeader;
+        }
+    }
+}

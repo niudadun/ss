@@ -1,0 +1,216 @@
+﻿using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Resources;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Language View Page
+    /// Page displays all supported language in pager format (Carousel View)
+    /// </summary>
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class LanguagePage : ContentPage
+    {
+        private static string TAG = "LanguagePage";
+
+        int Count = 0;
+        List<Grid> GridList;
+
+        /// <summary>
+        /// LanguagePage constructor
+        /// Initialises Carousel View, supported language list and Grid view
+        /// </summary>
+        public LanguagePage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            MainCarouselView.ItemTemplate = GetDataTemplate();
+            var supportedLanguages = L10n.GetSupportedLanguages();
+            GridList = new List<Grid>
+            {
+                CreateNewGrid(supportedLanguages.GetRange(0,5),5,true,false),
+                CreateNewGrid(supportedLanguages.GetRange(5,5),5,false,true)
+            };
+            MainCarouselView.ItemsSource = GridList;
+            var mainGrid = this.FindByName<Grid>("LanguageGrid");
+            mainGrid.Children.Add(MainCarouselView);
+            Grid.SetRow(MainCarouselView, 1);
+        }
+
+        /// <summary>
+        /// Gets the data template.
+        /// </summary>
+        /// <returns></returns>
+        public DataTemplate GetDataTemplate()
+        {
+            return new DataTemplate(() =>
+            {
+                Grid v = GridList[Count];
+                Count++;
+                return v;
+            });
+        }
+
+        /// <summary>
+        /// Creates the new grid with languages to be displayed in that page.
+        /// </summary>
+        /// <param name="languages">Languages which will be displayed in this grid</param>
+        /// <param name="range">Number of languages</param>
+        /// <param name="frontSlider">If front slider back image to be displayed</param>
+        /// <param name="backSlider">If back slider back image to be displayed</param>
+        /// <returns></returns>
+        private Grid CreateNewGrid(List<Language> languages,int range,bool frontSlider,bool backSlider)
+        {
+            var columnCount = 2;
+            var row = 0;
+            var grid = new Grid()
+            {
+                ColumnSpacing = 50,
+                RowSpacing = 50,
+            };
+            grid.RowDefinitions = new RowDefinitionCollection()
+            {
+                new RowDefinition()
+                {
+                     Height = new GridLength(0,GridUnitType.Star),
+                },
+            };
+
+            for (var i = 0; i < 3; i++)
+            {
+                grid.RowDefinitions.Add(new RowDefinition()
+                {
+                    Height = new GridLength(10, GridUnitType.Star),
+                });
+            }
+           
+
+            for (var i = 0; i < columnCount; i++)
+            {
+                grid.ColumnDefinitions.Add(new ColumnDefinition()
+                {
+                    Width = new GridLength(50, GridUnitType.Star),
+
+                });
+            }
+
+            for (var i = 0; i < range; i++)
+            {
+                Button_layout blayout = new Button_layout();
+                blayout.SetIsFirstPage(true, true);
+                Button rlButton = blayout.FindByName<Button>("language_button");
+                rlButton.AutomationId = Utils.AUTOMATION_ID + "btn" + languages[i].LanguageName;
+                rlButton.ClassId = languages[i].LanguageCode;
+                rlButton.Text = languages[i].LanguageTranslation;
+                
+                rlButton.Clicked += LanguageOpt;
+                var column = i % columnCount;
+                if (column == 0)
+                {
+                    row++;
+                    if (backSlider && i == range - 1)
+                    {
+                        column = 1;
+                        blayout.HorizontalOptions = LayoutOptions.Start;
+                    }
+                }else
+                {
+                    blayout.HorizontalOptions = LayoutOptions.Start;
+                }
+                grid.Children.Add(blayout);
+                Grid.SetColumn(blayout, column);
+                Grid.SetRow(blayout, row);
+            }
+
+            if(frontSlider)
+            {
+                Button_layout blayout = new Button_layout();
+                blayout.SetIsFirstPage(true, false);
+                Button rlButton = blayout.FindByName<Button>("language_button");
+                rlButton.AutomationId = Utils.AUTOMATION_ID + "btnFrontSlider";
+                rlButton.ClassId = "Next";
+                blayout.HorizontalOptions = LayoutOptions.Start;
+                rlButton.Clicked += SliderClicked;
+                grid.Children.Add(blayout);
+                Grid.SetColumn(blayout, 1);
+                Grid.SetRow(blayout, 3);
+            }
+
+            if (backSlider)
+            {
+                Button_layout blayout = new Button_layout();
+                blayout.SetIsFirstPage(false, false);
+                Button rlButton = blayout.FindByName<Button>("language_button");
+                rlButton.AutomationId = Utils.AUTOMATION_ID + "btnBackSlider";
+                rlButton.ClassId = "Previous";
+                blayout.HorizontalOptions = LayoutOptions.End;
+                rlButton.Clicked += SliderClicked;
+                grid.Children.Add(blayout);
+                Grid.SetColumn(blayout, 0);
+                Grid.SetRow(blayout, 3);
+            }
+            return grid;
+
+        }
+
+        /// <summary>
+        /// Set selected language in the settings preference and app culture info, when user taps on the language button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void LanguageOpt(object sender, EventArgs e)
+        {            
+            var button = (Button)sender;
+
+            App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.LanguageSelectionDialogPage.ToString(),new InfoHolder(button.ClassId,Enums.EnumMaps.LANGUAGE_SELECTION), false);
+        }
+
+        /// <summary>
+        /// Overridden method called when page comes to foreground
+        /// </summary>
+        protected override void OnAppearing()
+        {
+            
+        }
+
+        /// <summary>
+        /// Slider button clicked handling to show 1st or 2nd page
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SliderClicked(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            if (button.ClassId == "Next")
+                MainCarouselView.Position = 1;
+            //else if(button.ClassId == "Previous")
+                MainCarouselView.Position = 0;
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            App.NavigationService.GoBack(false);
+            return true;
+        }
+
+    }
+}

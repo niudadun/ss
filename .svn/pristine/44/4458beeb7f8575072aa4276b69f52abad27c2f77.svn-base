@@ -1,0 +1,237 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Footer View
+    /// This class contains footerview used in all screens.
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class FooterView : ContentView
+	{
+        private static string TAG = "FooterView";
+        /// <summary>
+        /// FooterView constructor
+        /// </summary>
+        public FooterView ()
+		{
+			InitializeComponent ();
+            SetPageText();
+		}
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            //footerText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.FOOTER_TEXT);
+        }
+
+        /// <summary>
+        /// Method to set divider visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetDividerVisible(bool makeVisible)
+        {
+            Divider.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Method to set back button visibility
+        /// </summary>
+        public void SetBackButtonVisible(bool makeVisible)
+        {
+            BackButton.IsVisible = makeVisible;
+            if (!makeVisible)
+            {
+                Divider.IsVisible = makeVisible;
+            }
+        }
+
+        public void SetNavigationBarVisible(bool makeVisible)
+        {
+            NavigationBarGrid.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Method to set the text for the action button.
+        /// Since we need to set the action handler to this button in the parent class, 
+        /// hence we pass the button reference back.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public Button SetButtonHandling(String text)
+        {
+            FooterBtn.IsVisible = true;
+            Divider_End.IsVisible = true;
+            FooterBtn.Text = text;
+            return FooterBtn;
+        }
+
+        /// <summary>
+        /// Method to set the text for the action button.
+        /// Since we need to set the action handler to this button in the parent class, 
+        /// hence we pass the button reference back.
+        /// </summary>
+        /// <param name="imageSource"></param>
+        /// <returns></returns>
+        public Button SetMiddleButtonHandling(String imageSource)
+        {
+            QRImageButton.Image = (FileImageSource)ImageSource.FromFile(imageSource);
+            return QRImageButton;
+        }
+
+        /// <summary>
+        /// Method to set the action button visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetButtonVisible(bool makeVisible)
+        {
+            FooterBtn.IsVisible = makeVisible;
+            Divider_End.IsVisible = makeVisible;
+        }
+
+        /// <summary>
+        /// Method to set the action button visibility
+        /// </summary>
+        /// <param name="makeVisible"></param>
+        public void SetMiddleButtonVisible(bool makeVisible)
+        {
+            QRImageButton.IsVisible = makeVisible;
+        }
+
+
+        /// <summary>
+        /// Method to remove the click handler for back button and 
+        /// pass the button reference back, so that parent class can set the handler.
+        /// </summary>
+        /// <returns></returns>
+        public Button GetBackButtonAndRemoveClick()
+        {
+            BackButton.Clicked -= OnBackButtonClicked;
+            return BackButton;
+        }
+
+        /// <summary>
+        /// Back button command to be used when user press back arrow in footer view.
+        /// this will navigate back the current page without animation
+        /// </summary>
+        public ICommand BackBtnCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    await App.NavigationService.GoBack(false);
+                });
+            }
+        }
+
+        private void OnBackButtonClicked(object sender, EventArgs e)
+        {
+            BackBtnCommand.Execute(null);
+        }
+
+        private void OnBackButtonPressed(object sender, EventArgs e)
+        {
+            SetBackButtonImage(true);
+        }
+
+        private void OnBackButtonReleased(object sender, EventArgs e)
+        {
+            SetBackButtonImage(false);
+        }
+
+        private void OnBackButtonFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            SetBackButtonImage(btn.IsFocused);
+        }
+
+        private void OnButtonPressed(object sender, EventArgs e)
+        {
+            SetButtonImage(true);
+        }
+
+        private void OnButtonReleased(object sender, EventArgs e)
+        {
+            SetButtonImage(false);
+        }
+
+        private void OnButtonFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+
+            SetButtonImage(btn.IsFocused);
+        }
+
+        private void OnNavBtnPressed(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+            btn.TextColor = Color.White;
+        }
+
+        private void OnNavBtnReleased(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.BackgroundColor = Color.Transparent;
+            btn.TextColor = Color.Black;
+        }
+
+        private void OnNavBtnFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+            btn.TextColor = Color.White;
+        }
+
+        /// <summary>
+        /// Method to set the action button color and text color when pressed
+        /// </summary>
+        /// <param name="isPressed"></param>
+        void SetButtonImage(bool isPressed)
+        {
+            if (isPressed)
+            {
+                FooterBtn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                FooterBtn.TextColor = Color.White;
+                FooterBtn.Image = null;
+            }
+            else
+            {
+                FooterBtn.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.yellow_color);
+                FooterBtn.TextColor = Color.Black;
+                FooterBtn.Image = null;
+            }
+        }
+
+        /// <summary>
+        /// Method to set the back button image when pressed
+        /// </summary>
+        /// <param name="isPressed"></param>
+        void SetBackButtonImage(bool isPressed)
+        {
+            if (isPressed)
+            {
+                //BackButton.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                BackButton.TextColor = Color.White;
+                BackButton.Image = (FileImageSource)ImageSource.FromFile("ic_back_arrow_white");
+            }
+            else
+            {
+                //BackButton.BackgroundColor = Color.FromHex(Shared.Resources.AppResources.yellow_color);
+                BackButton.TextColor = Color.Black;
+                BackButton.Image = (FileImageSource)ImageSource.FromFile("ic_back_arrow_blue");
+            }
+        }
+    }
+}

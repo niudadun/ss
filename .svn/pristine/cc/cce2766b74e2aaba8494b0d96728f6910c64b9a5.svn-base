@@ -1,0 +1,403 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text;
+
+namespace SmartFlow.Shared.Enums
+{
+    /// <summary>
+    /// Enums Class 
+    /// This Class contains enums for Profile Api mapping, Text mapping, declaration mapping, Page enums 
+    /// </summary>
+    class Enumerators
+    {
+        public static string TAG = "Enumerators";
+
+        /// <summary>
+        /// Method to define mapping between Question and Api Label
+        /// This api label is used to get the text from the Config Api.
+        /// Since api config contains the text for all the labels used in profile page, hence we have to create a mapper to link
+        /// profile question with the api label.
+        /// </summary>
+        /// <param name="profileQuestion"></param>
+        /// <returns></returns>
+        public static string GetQuestionLabelFromApi(QuestionIdenfiers profileQuestion)
+        {
+            switch (profileQuestion)
+            {
+                case Enums.QuestionIdenfiers.PARTICULARS:
+                    return "";
+                case Enums.QuestionIdenfiers.FULLNAME:
+                    return ProfileTextApiMapping.LID0000014.ToString();
+                case Enums.QuestionIdenfiers.SEX:
+                    return ProfileTextApiMapping.LID0000015.ToString();
+                case Enums.QuestionIdenfiers.DATE_OF_BIRTH:
+                    return ProfileTextApiMapping.LID0000016.ToString();
+                case Enums.QuestionIdenfiers.PLACE_OF_RESIDENCE:
+                    return ProfileTextApiMapping.LID0000017.ToString();
+                case Enums.QuestionIdenfiers.COUNTRY_OF_RESIDENCE:
+                    return ProfileTextApiMapping.LID0000018.ToString();
+                case Enums.QuestionIdenfiers.STATE_OF_RESIDENCE:
+                    return ProfileTextApiMapping.LID0000019.ToString();
+                case Enums.QuestionIdenfiers.CITY_OF_RESIDENCE:
+                    return ProfileTextApiMapping.LID0000020.ToString();
+                case Enums.QuestionIdenfiers.COUNTRY_OF_BIRTH:
+                    return ProfileTextApiMapping.LID0000021.ToString();
+                case Enums.QuestionIdenfiers.NATIONALITY:
+                    return ProfileTextApiMapping.LID0000022.ToString();
+                case Enums.QuestionIdenfiers.IDENTITY_CARD_NUMBER:
+                    return ProfileTextApiMapping.LID0000023.ToString();
+                case Enums.QuestionIdenfiers.PASSPORT_NUMBER:
+                    return ProfileTextApiMapping.LID0000024.ToString();
+                case Enums.QuestionIdenfiers.PASSPORT_EXPIRY:
+                    return ProfileTextApiMapping.LID0000025.ToString();
+                case Enums.QuestionIdenfiers.PHONE_NUMBER:
+                    return ProfileTextApiMapping.LID0000026.ToString();
+                case Enums.QuestionIdenfiers.EMAIL:
+                    return ProfileTextApiMapping.LID0000027.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Method to define mapping between DropDown Data
+        /// This api label is used to get the text from the Config Api.
+        /// Since api config contains the text for all the labels used in profile page, hence we have to create a mapper to link
+        /// profile question with the api label.
+        /// </summary>
+        /// <param name="profileQuestion"></param>
+        /// <returns></returns>
+        public static string GetTextForDropDown(DropDownData profileQuestion)
+        {
+            switch (profileQuestion)
+            {
+                case Enums.DropDownData.Male:
+                    return ProfileTextApiMapping.LID0000028.ToString();
+                case Enums.DropDownData.Female:
+                    return ProfileTextApiMapping.LID0000029.ToString();
+            }
+            return "";
+        }
+}
+
+/// <summary>
+/// Chapter values 
+/// This is used to identify the region in the UI when input fields are populated
+/// </summary>
+public enum ChapterIdentifiers
+    {
+        ///Empty Chapter
+        EmptyChapter,
+        ///Profile Chapter
+        Particulars,
+        /// Trip Information Chapter
+        Trip,
+        /// Declaration Chapter
+        Declare
+    }
+
+    /// <summary>
+    /// Data Values for DropDowns
+    /// </summary>
+    public enum DropDownData
+    {
+        ///Male M
+        Male,
+        ///female F
+        Female,
+        /// 
+        AIR,
+        LAND,
+        SEA,
+        COMMERCIAL,
+        PRIVATE,
+        BUS,
+        CAR,
+        LORRY,
+        MOTORCYLE,
+        RAIL,
+        VAN,
+        CRUISE,
+        FERRY,
+        VESSLE,
+        PRIVATE_CRAFT,
+        COMMERCIAL_VESSEL,
+        ACCO_HOTEL,
+        ACCO_PRIVATE,
+        ACC_OTHER,
+        YES,
+        NO
+    }
+
+    /// <summary>
+    /// Enum for Profile Questions
+    /// </summary>
+    public enum QuestionIdenfiers
+    {
+       /// Profile Page Title
+       PARTICULARS = 0,
+        /// Full Name 
+        FULLNAME = 1,
+        /// Gender 
+        SEX,
+        /// Date of Birth
+        DATE_OF_BIRTH,
+        /// Place of Residence 
+        PLACE_OF_RESIDENCE,
+        /// Country Of Residence 
+        COUNTRY_OF_RESIDENCE,
+        /// State of Residence 
+        STATE_OF_RESIDENCE,
+        /// City of Residence 
+        CITY_OF_RESIDENCE,
+        /// Country of Residence 
+        COUNTRY_OF_BIRTH,
+        /// Nationality 
+        NATIONALITY,
+        /// Identity Card Number 
+        IDENTITY_CARD_NUMBER,
+        /// Passport Number 
+        PASSPORT_NUMBER,
+        /// Passport Expiry Date 
+        PASSPORT_EXPIRY,
+        /// Contact Number 
+        PHONE_NUMBER,
+        /// Contact Number Country CODE
+        PHONE_NUMBER_COUNTRY,
+        /// Email Address 
+        EMAIL,
+        /// Declaration Chapter Title
+        TRIP,
+        /// Expected Date of Arrival
+        ARRIVAL_DATE,
+        /// Expected Date of Departure
+        DEPARTURE_DATE,
+        /// Type Of Transpart (transportTyp) [ A, L, S ]
+        TRANSPORT_TYPE,
+        /// Type Of Air Transport (airTransportTyp) (If transportTyp is Air) [ PA, CA]
+        TRANSPORT_TYPE_AIR,
+        /// Type Of Land Transport (vehicleType) (If transportTyp is LAND)
+        TRANSPORT_TYPE_LAND_VEHICLE_TYPE,
+        /// Type Of Sea Transport (vessleType) (If transportTyp is SEA) [ Cr, F, V, PC]
+        TRANSPORT_TYPE_SEA_VESSLE_TYPE,
+        /// Carrier Code (carrierCd) (If AirTransporTyp is Commercial)
+        CARRIER_CD,
+        /// Carrier Name (carrierName) (If AirTransporTyp is Private)
+        CARRIER_NAME,
+        /// Flight No (flightno) (If AirTransporTyp is Commercial)
+        FLIGHT_NO,
+        /// Vessle Name
+        VESSLE_NAME,
+        /// Cruise Name
+        CRUISE_NAME,
+        /// Vehicle No
+        VEHICLE_NO,
+        /// Accomodation Type
+        ACCOMODATION_TYPE,
+        /// ACCOMODATION Other
+        ACCOMODATION_OTHER,
+        /// Hotel Code
+        HOTEL_CD,
+        /// Hotel Name
+        HOTEL_NAME,
+        /// Address House No
+        ADDR_HOUSE_NO,
+        /// Address Floor No
+        ADDR_FLOOR_NO,
+        /// Address Unit No
+        ADDR_UNIT_NO,
+        /// ADDRESS Building Name
+        ADDR_BUILDING_NAME,
+        /// Address Street
+        ADDR_STREET,
+        /// Address Postal Code
+        ADDR_POSTAL_CODE,
+        /// Last City Visited
+        LAST_CITY_VISITED,
+        /// Next City Visiting
+        NEXT_CITY_VISITING,
+        /// Different Passport - Have you ever used a different passport for entring Singapore
+        DIFFERENT_PASSPORT,
+        /// Different Passport Name
+        DIFFERENT_PASSPORT_NAME,
+        /// Travel to Other countries
+        TRAVEL_TO_OTHER_COUNTRIES,
+        /// Prohibited entering Singapore
+        PROHIBIT_ENTER_SINGAPORE
+    }
+    
+    /// <summary>
+    /// Enum of all labels available in the Api Config
+    /// </summary>
+    public enum ProfileTextApiMapping
+    {
+        [Description("Full Name")]
+        LID0000014 = 0,
+
+        [Description("Sex")]
+        LID0000015 = 1,
+
+        [Description("Date of Birth")]
+        LID0000016,
+
+        [Description("Place of Residence")]
+        LID0000017,
+
+        [Description("Country of Residence")]
+        LID0000018,
+
+        [Description("State of Residence")]
+        LID0000019,
+
+        [Description("City of Residence")]
+        LID0000020,
+
+        [Description("Country of Birth")]
+        LID0000021,
+
+        [Description("Nationality")]
+        LID0000022,
+
+        [Description("Identity Card Number")]
+        LID0000023,
+
+        [Description("Passport Number")]
+        LID0000024,
+
+        [Description("Date of Passport Expiry")]
+        LID0000025,
+
+        [Description("Contact Number")]
+        LID0000026,
+
+        [Description("Email Address")]
+        LID0000027,
+        [Description("Male")]
+        LID0000028,
+        [Description("Female")]
+        LID0000029,
+    }
+
+    /// <summary>
+    /// Enum of all the text values used in the app.
+    /// This helps us to re-use the values across the app
+    /// </summary>
+    public enum TextMapping
+    {
+        MAIN_PAGE_BTN_SELECT_LANGUAGE,
+        MAIN_PAGE_BTN_SELECT_SERVICES,
+        LANGAUGE_HEADER,
+        SERVICES_HEADER,
+        PROFILE_LIST,
+        PROFILE_DETAILS,
+        ADD_PROFILE,
+        SERVICES_PAGE_BTN_MANAGE_PROFILE,
+        SERVICES_PAGE_BTN_CREATE_DEC,
+        SERVICES_PAGE_BTN_MANAGE_DEC,
+        NO_PROFILES,
+        FOOTER_TEXT,
+        HEADER_TEXT_A,
+        HEADER_TEXT_B,
+        HEADER_TEXT_C,
+        HEADER_TEXT_D,
+        HEADER_TEXT_E,
+        HEADER_TEXT_F,
+        LOADING_TEXT,
+        PROFILE_SAVE_SUCCESS_MESSAGE,
+        DONE_TEXT,
+        SELECT_IMAGE,
+        VALIDATION_MESSAGE,
+        INVALID_EMAIL,
+        MANDATORY_FIELD_MESSAGE,
+        NUMBERS_ONLY_MESSAGE,
+        SELECT_TEXT,
+        PROFILE_LIST_BTN_VIEW,
+        PROFILE_LIST_BTN_CREATE,
+        ELECTRONIC_CARD,
+        SCAN_TEXT,
+        MANUAL_TEXT,
+        SAVE_TEXT,
+        UPDATE_TEXT,
+        EDIT_TEXT,
+        DELETE_TEXT,
+        PROFILE_CREATED_SUCCESSFULLY,
+        PROFILE_UPDATED_SUCCESSFULLY,
+        PROFILE_DELETED_SUCCESSFULLY,
+        DECLARATION_CREATED_SUCCESSFULLY,
+        DECLARATION_UPDATED_SUCCESSFULLY,
+        DECLARATION_DELETED_SUCCESSFULLY,
+        NO_PROFILES_FOUND,
+        ADD_PASSENGER,
+        LANGUAGE_SELECTION_TEXT,
+        YES_TEXT,
+        NO_TEXT,
+        ADD_TEXT
+    }
+
+    /// <summary>
+    /// Enum for all the pages used across the app.
+    /// This is helpfull in re-using the page name across the app.
+    /// </summary>
+    public enum PageEnumsForNavigation
+    {
+        /// Home Page (Language/Services Selection)
+        MainPage,
+        /// Menu Selection Page (Profile, Manage Declaration, Create Declaration Selection)
+        MainMenuPage,
+        /// Language Selection Page
+        LanguagePage,
+        /// Profile List
+        ProfilesList,
+        /// Profile Details Page
+        ManageProfilePage,
+        /// Create Profile Options Page (Scan passport, Manual entry)
+        ProfileCreateOptionsPage,
+        /// Profile Information Page (When user clicks on any profile from profile List)
+        ProfileInfoDialogPage,
+        /// Success Page
+        SuccessPage,
+        /// Menu Selection Page tutorial Screen (Profile, Manage Declaration, Create Declaration Selection)
+        MainMenuPageTutorial,
+        /// The create declaration page.
+        CreateDeclarationPage,
+        /// The manage declaration page.
+        ManageDeclarationPage,
+        /// Language Selection Dialog Page.
+        LanguageSelectionDialogPage
+    }
+
+    /// <summary>
+    /// Enum for all the states for Profile Details page.
+    /// This is helpful in determining which state the details page is in and hence can manipulate the UI/action buttons accordingly.
+    /// This also helps to manipulate the message on Success screen, based on from which state success page is being displayed
+    /// </summary>
+    public enum EnumMaps
+    {
+        /// Create Profile State
+        CREATE_INFO,
+        /// Update Profile State
+        UPDATE_INFO,
+        /// Delete Profile State
+        DELETE_INFO,
+        /// View Profile State
+        VIEW_INFO,
+        /// Profile List State
+        PROFILE_LIST,
+        /// Create Declaration State
+        CREATE_DECLARATION,
+        /// Create Declaration for Single Profile With Multiple Trips
+        CREATE_DECLARATION_SINGLE_PROFILE,
+        /// Create Declaration for Group
+        CREATE_DECLARATION_GROUP,
+        /// Manage Declaration State
+        MANAGE_DECLARATION,
+        /// Language Selection Dialog
+        LANGUAGE_SELECTION,
+        /// Create Declaration Selection Screen
+        CREATE_DECLARATION_SELECTION_SCREEN,
+        /// <summary>
+        /// The create declaration from update screen
+        /// </summary>
+        CREATE_DECLARATION_UPDATE_SCREEN
+    }
+}

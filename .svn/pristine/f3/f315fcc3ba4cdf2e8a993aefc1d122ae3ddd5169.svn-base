@@ -1,0 +1,731 @@
+﻿using SmartFlow.Shared.Enums;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Models.Ede.Enums;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+
+namespace SmartFlow.Shared.DataTemplates
+{
+    /// <summary>
+    /// This class is used to save template for the declaration questions which will be populated in the input view.
+    /// Template will be filled from the Api config and static questions available in the app.
+    /// </summary>
+    class DeclarationTemplate
+    {
+        private static string TAG = "DeclarationTemplate";
+
+        /// <summary>
+        /// Function to create declaration
+        /// </summary>
+        /// <returns></returns>
+        public static Declaration CreateDeclaration()
+        {
+            var template = new Declaration()
+            {
+                DeclarationType = DeclarationType.Template,
+                Language = "English",
+                CreatedDate = DateTime.Now.ToString(Shared.Helpers.Utils.CLIENT_DATE_FORMAT),
+                LastUpdatedDate = DateTime.Now.ToString(Shared.Helpers.Utils.CLIENT_DATE_FORMAT),
+                Chapters = CreateDeclarationChapters(),
+            };
+            return template;
+        }
+
+        /// <summary>
+        /// Method to add chapters/questions/allowed options etc to the template.
+        /// This template is then used to add the views in the input screen
+        /// </summary>
+        /// <returns></returns>
+        public static List<Chapter> CreateDeclarationChapters()
+        {
+            var chapters = new List<Chapter>()
+            {
+                new Chapter()
+                {
+                     Order =1,
+                     Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP),
+                     ChapterIdentifier = ChapterIdentifiers.Trip,
+                     Questions = new List<Question>()
+                     {
+                          new Question()
+                         {
+                              QuestionKey = "edaOn",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ARRIVAL_DATE),
+                              Order =1,
+                              Type = QuestionType.Date,
+                              QuestionIdentifier = QuestionIdenfiers.ARRIVAL_DATE,
+                              isMandatory = true,
+                              AnswerText = DateTime.Now.ToString(Shared.Helpers.Utils.DATE_FORMAT),
+                              Config = new ValidationConfig()
+                              {
+                                  MaxDate = Utils.GetDateInFormat(DateTime.Now.AddDays(15)),
+                                  MinDate = Utils.GetDateInFormat(DateTime.Now),
+                                  IsRequired = true
+                              }
+                         },
+                           new Question()
+                         {
+                              QuestionKey = "eddOn",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.DEPARTURE_DATE),
+                              Order =2,
+                              Type = QuestionType.Date,
+                              QuestionIdentifier = QuestionIdenfiers.DEPARTURE_DATE,
+                              isMandatory = true,
+                              AnswerText = DateTime.Now.ToString(Shared.Helpers.Utils.DATE_FORMAT),
+                              Config = new ValidationConfig()
+                              {
+                                  MaxDate = Utils.GetDateInFormat(DateTime.Now.AddDays(15)),
+                                  MinDate = Utils.GetDateInFormat(DateTime.Now),
+                                  IsRequired = true
+                              }
+                         },
+                          new Question()
+                         {
+                              QuestionKey = "transportTyp",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRANSPORT_TYPE),
+                              Order =3,
+                              Type = QuestionType.DropDown,
+                              QuestionIdentifier = QuestionIdenfiers.TRANSPORT_TYPE,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "A",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.AIR),
+                                      ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.TRANSPORT_TYPE_AIR )}
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "L",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.LAND),
+                                      ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.TRANSPORT_TYPE_LAND_VEHICLE_TYPE),
+                                      new ConditionalQuestion(QuestionIdenfiers.VEHICLE_NO)}
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =4,
+                                      Code = "S",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.SEA),
+                                      ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.TRANSPORT_TYPE_SEA_VESSLE_TYPE)}
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                         },
+                          new Question()
+                         {
+                              QuestionKey = "airTransportTyp",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRANSPORT_TYPE_AIR),
+                              Order =4,
+                              Type = QuestionType.DropDown,
+                              IsVisible = false,
+                              QuestionIdentifier = QuestionIdenfiers.TRANSPORT_TYPE_AIR,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "PA",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.PRIVATE),
+                                      ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.CARRIER_NAME) }
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "CA",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.COMMERCIAL),
+                                      ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.FLIGHT_NO),
+                                      new ConditionalQuestion(QuestionIdenfiers.CARRIER_CD)}
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                         },
+                          new Question()
+                         {
+                              QuestionKey = "vessleType",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRANSPORT_TYPE_SEA_VESSLE_TYPE),
+                              Order =5,
+                              Type = QuestionType.DropDown,
+                              IsVisible = false,
+                              QuestionIdentifier = QuestionIdenfiers.TRANSPORT_TYPE_SEA_VESSLE_TYPE,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "CR",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.CRUISE),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.CRUISE_NAME) }
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "F",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.FERRY),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.VESSLE_NAME) }
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "V",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.VESSLE),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.VESSLE_NAME) }
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "PC",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.PRIVATE_CRAFT),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.VESSLE_NAME) }
+                                  }
+                              }
+                         },
+                         new Question()
+                        {
+                             QuestionKey = "carrierCd",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.CARRIER_CD),
+                             Order =6,
+                             IsVisible = false,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.CARRIER_CD,
+                             isMandatory = true,
+                             Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "CD1",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.CARRIED_CD_1),
+                                  },
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "carrierName",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.CARRIER_NAME),
+                             Order =7,
+                             Type = QuestionType.Text,
+                             IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.CARRIER_NAME,
+                             isMandatory = true,
+                             Config = new ValidationConfig()
+                             {
+                                  MaxLength = 66,
+                                 ValidateSpecialCharacters = true,
+                                 IsRequired = true,
+                             }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "flightNo",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.FLIGHT_NO),
+                             Order =8,
+                              IsVisible = false,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.FLIGHT_NO,
+                             isMandatory = true,
+                             Config = new ValidationConfig()
+                             {
+                                  MaxLength = 66,
+                                 ValidateSpecialCharacters = true,
+                                 IsRequired = true,
+                             }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "vesselName",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.VESSLE_NAME),
+                             Order =9,
+                              IsVisible = false,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.VESSLE_NAME,
+                             isMandatory = true,
+                             Config = new ValidationConfig()
+                             {
+                                  MaxLength = 66,
+                                 ValidateSpecialCharacters = true,
+                                 IsRequired = true,
+                             }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "cruiseName",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.CRUISE_NAME),
+                             Order =10,
+                              IsVisible = false,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.CRUISE_NAME,
+                             isMandatory = true,
+                             Config = new ValidationConfig()
+                             {
+                                  MaxLength = 3,
+                                 ValidateSpecialCharacters = true,
+                                 IsRequired = true,
+                             }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "vehicleType",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRANSPORT_TYPE_LAND_VEHICLE_TYPE),
+                             Order =11,
+                              IsVisible = false,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.TRANSPORT_TYPE_LAND_VEHICLE_TYPE,
+                             isMandatory = true,
+                             Answers = new List<Answer>()
+                             {
+                                 new Answer()
+                                 {
+                                     Order =1,
+                                     Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                 },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "B",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.BUS)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "C",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.CAR)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "L",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.LORRY)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "M",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.MOTORCYLE)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "R",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.RAIL)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "V",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.VAN)
+                                  }
+                             },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "vehicleNo",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.VEHICLE_NO),
+                             Order =12,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.VEHICLE_NO,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 66,
+                                  IsRequired = true
+                              }
+                        },
+                          new Question()
+                         {
+                              QuestionKey = "accoTyp",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ACCOMODATION_TYPE),
+                              Order =13,
+                              Type = QuestionType.DropDown,
+                              QuestionIdentifier = QuestionIdenfiers.ACCOMODATION_TYPE,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "H",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.ACCO_HOTEL),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.HOTEL_CD),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_FLOOR_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_UNIT_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_BUILDING_NAME)}
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "P",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.ACCO_PRIVATE),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.ADDR_HOUSE_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_FLOOR_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_UNIT_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_BUILDING_NAME),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_STREET),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_POSTAL_CODE)}
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "O",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.ACC_OTHER),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.ACCOMODATION_OTHER),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_FLOOR_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_UNIT_NO),
+                                       new ConditionalQuestion(QuestionIdenfiers.ADDR_BUILDING_NAME)}
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                         },
+                         new Question()
+                        {
+                             QuestionKey = "accoOth",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ACCOMODATION_OTHER),
+                             Order =14,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ACCOMODATION_OTHER,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 66,
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                            QuestionKey = "hotelCd",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.HOTEL_CD),
+                              Order =15,
+                              Type = QuestionType.DropDown,
+                              IsVisible = false,
+                              QuestionIdentifier = QuestionIdenfiers.HOTEL_CD,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "HOTEL",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.ACCO_HOTEL),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.HOTEL_NAME) }
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "OTHER",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.ACC_OTHER),
+                                       ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.HOTEL_NAME) }
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "hotelName",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.HOTEL_NAME),
+                             Order =16,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.HOTEL_NAME,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 66,
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "addrHseNo",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ADDR_HOUSE_NO),
+                             Order =17,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ADDR_HOUSE_NO,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 8,
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "addrFlrNo",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ADDR_FLOOR_NO),
+                             Order =18,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ADDR_FLOOR_NO,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 2,
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "addrUnitNo",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ADDR_UNIT_NO),
+                             Order =19,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ADDR_UNIT_NO,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 5,
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "addrBldg",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ADDR_BUILDING_NAME),
+                             Order =20,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ADDR_BUILDING_NAME,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 30,
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "addrSt",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ADDR_STREET),
+                             Order =21,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ADDR_STREET,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 32,
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "addrPostalCd",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.ADDR_POSTAL_CODE),
+                             Order =22,
+                             Type = QuestionType.Text,
+                              IsVisible = false,
+                             QuestionIdentifier = QuestionIdenfiers.ADDR_POSTAL_CODE,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 6,
+                                  IsRequired = true
+                              }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "lstCity",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.LAST_CITY_VISITED),
+                             Order =23,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.LAST_CITY_VISITED,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 5
+                              }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "nxtCity",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.NEXT_CITY_VISITING),
+                             Order =24,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.NEXT_CITY_VISITING,
+                             isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  MaxLength = 5
+                              }
+                        },
+                         new Question()
+                        {
+                            QuestionKey = "Static_QN_1",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.DIFFERENT_PASSPORT),
+                              Order =25,
+                              Type = QuestionType.DropDown,
+                              QuestionIdentifier = QuestionIdenfiers.DIFFERENT_PASSPORT,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "Y",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.YES),
+                                      ConditionalQuestion = new List<ConditionalQuestion>{new ConditionalQuestion(QuestionIdenfiers.DIFFERENT_PASSPORT_NAME) }
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "N",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.NO)
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                            QuestionKey = "Static_QN_2",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.DIFFERENT_PASSPORT_NAME),
+                              Order =26,
+                              Type = QuestionType.Text,
+                              IsVisible = false,
+                              QuestionIdentifier = QuestionIdenfiers.DIFFERENT_PASSPORT_NAME,
+                              isMandatory = true,
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true,
+                                  ValidateSpecialCharactersName = true,
+                                  MaxLength = 66
+                              }
+                        },
+                         new Question()
+                        {
+                            QuestionKey = "Static_QN_3",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRAVEL_TO_OTHER_COUNTRIES),
+                              Order =27,
+                              Type = QuestionType.DropDown,
+                              QuestionIdentifier = QuestionIdenfiers.TRAVEL_TO_OTHER_COUNTRIES,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "Y",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.YES)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "N",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.NO)
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                        },
+                         new Question()
+                        {
+                            QuestionKey = "Static_QN_4",
+                              Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PROHIBIT_ENTER_SINGAPORE),
+                              Order =28,
+                              Type = QuestionType.DropDown,
+                              QuestionIdentifier = QuestionIdenfiers.PROHIBIT_ENTER_SINGAPORE,
+                              isMandatory = true,
+                              Answers = new List<Answer>()
+                              {
+                                  new Answer()
+                                  {
+                                      Order =1,
+                                      Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =2,
+                                      Code = "Y",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.YES)
+                                  },
+                                  new Answer()
+                                  {
+                                      Order =3,
+                                      Code = "N",
+                                      Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.NO)
+                                  }
+                              },
+                              Config = new ValidationConfig()
+                              {
+                                  IsRequired = true
+                              }
+                        }
+                     }
+                },
+            };
+
+            return chapters;
+        }
+    }
+}

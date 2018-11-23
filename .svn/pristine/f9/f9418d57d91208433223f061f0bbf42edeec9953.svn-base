@@ -1,0 +1,284 @@
+﻿
+using SmartFlow.Shared.DataTemplates;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Models.Ede.Enums;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.Views;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared.ViewModels
+{
+    public class DeclarationViewModel : INotifyPropertyChanged
+    {
+        private static string TAG = "DeclarationViewModel";
+
+        private readonly IDeclarationsRepository _declarationsRepository;
+        private readonly IProfilesRepository _profilesRepository;
+        private Declaration _declarationTemplate = null;
+        private List<Declaration> _declarations = null;
+        private readonly INavigation _navigate;
+        public Command LoadDeclarationCommand { get; set; }
+        public int SelectedProfileId { get; set; }
+
+        //this variable is used for control button enable or not.
+        private bool _isLoading;
+        private bool _isnotLoading;
+        public bool IsNotLoading
+        {
+            get { return !_isLoading; }
+            private set
+            {
+                if (_isnotLoading != value)
+                {
+                    _isnotLoading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public bool IsLoading
+        {
+            get { return _isLoading; }
+
+            private set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public DeclarationViewModel(INavigation navigate)
+        {
+            _isBusy = false;
+            _navigate = navigate;
+            _isLoading = IsLoading;
+            _isnotLoading = IsNotLoading;
+            _declarationsRepository = App._declarationsRepository;
+            _profilesRepository = App._profilesRepository;
+        }
+
+        /// <summary>
+        /// Declaration view model with ID
+        /// </summary>
+        /// <param name="navigate">navigation service</param>
+        /// <param name="Id">selected profile id</param>
+        public DeclarationViewModel(INavigation navigate, int Id)
+        {
+            _isBusy = false;
+            _navigate = navigate;
+            _isLoading = IsLoading;
+            _isnotLoading = IsNotLoading;
+            _declarationsRepository = App._declarationsRepository;
+            _profilesRepository = App._profilesRepository;
+            CurrentDeclaration = _declarationTemplate = _declarationsRepository.GetDeclarationByIdAsync(Id).Result;
+        }
+
+        //Load declaration.
+        public async Task LoadDeclaration(DeclarationViewModel viewmodel)
+        {
+            if (!IsBusy)
+            {
+                IsBusy = true;
+                await Task.Delay(3000);
+                var declarationTemplate = _declarationsRepository.GetDeclarationByTypeAsync(DeclarationType.Template);             
+                IsBusy = false;
+            }
+        }
+
+        public Declaration CurrentDeclaration
+        {
+            get
+            {
+                if (_declarationTemplate == null)
+                {
+                    _declarationTemplate = DataTemplates.DeclarationTemplate.CreateDeclaration();
+                    _declarationTemplate.Profile = ProfileTemplate.CreateProfile(); //_profilesRepository.GetProfileByIdAsync(1).Result;
+                }
+                return _declarationTemplate;
+            }
+            set
+            {
+                OnPropertyChanged();
+            }
+        }
+
+        public List<Declaration> Declarations
+        {
+            get
+            {
+                try
+                {
+                    if (_declarations == null)
+                    {
+                        _declarations = _declarationsRepository.GetDeclarationByProfileIdAsync(SelectedProfileId).Result.ToList();
+                        //_declarations.ForEach(i =>
+                        //{
+
+                        //});
+                        //_declarationTemplate.Profile = ProfileTemplate.CreateProfile(); //_profilesRepository.GetProfileByIdAsync(1).Result;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    LogHandler.AddExceptionLog(TAG, "", ex, true);
+                }
+                return _declarations;
+            }
+            set
+            {
+                OnPropertyChanged();
+            }
+        }
+
+        public List<Chapter> Chapters = new List<Chapter>();
+
+        public ICommand BackBtn
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    await _navigate.PopModalAsync();
+                });
+            }
+        }
+
+        public void LoadProfileAnswers(List<Declaration> lstDeclarations)
+        {
+            var template = ProfileTemplate.CreateProfile();
+            foreach (var declaration in lstDeclarations)
+            {
+                foreach (var ques in declaration.Profile.Chapters[0].Questions)
+                {
+                    foreach (var question in template.Chapters[0].Questions)
+                    {
+                        if (question.QuestionIdentifier == ques.QuestionIdentifier)
+                        {
+                            ques.Answers = question.Answers;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void LoadDeclarationAnswers(List<Declaration> lstDeclarations)
+        {
+            var template = DeclarationTemplate.CreateDeclaration();
+            foreach (var declaration in lstDeclarations)
+            {
+                foreach (var ques in declaration.Chapters[0].Questions)
+                {
+                    foreach (var question in template.Chapters[0].Questions)
+                    {
+                        if (question.QuestionIdentifier == ques.QuestionIdentifier)
+                        {
+                            ques.Answers = question.Answers;
+                        }
+                    }
+                }
+            }
+        }
+
+        public ICommand AddCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    try
+                    {
+                        IsLoading = true;
+                        IsNotLoading = false;
+                        ModifyAnswers();
+                        CurrentDeclaration.DeclarationType = DeclarationType.Draft;
+                        await _declarationsRepository.AddDeclarationAsync(CurrentDeclaration);
+                        IsLoading = false;
+                        IsNotLoading = true;
+                    }
+                    catch(Exception ex)
+                    {
+                        LogHandler.AddExceptionLog(TAG, "", ex, true);
+                    }
+                   // await _navigate.PushModalAsync(new MainMenuPage());
+                });
+            }
+            set { }
+        }
+
+        public ICommand UpdateCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    try
+                    {
+                        IsLoading = true;
+                        IsNotLoading = false;
+                        ModifyAnswers();
+                        await _declarationsRepository.UpdateDeclarationAsync(CurrentDeclaration);
+                        IsLoading = false;
+                        IsNotLoading = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHandler.AddExceptionLog(TAG, "", ex, true);
+                    }
+                    // await _navigate.PushModalAsync(new MainMenuPage());
+                });
+            }
+            set { }
+        }
+
+
+        private void ModifyAnswers()
+        {
+
+            CurrentDeclaration.Chapters.ForEach(c =>
+            {
+                if (c.ChapterIdentifier != Enums.ChapterIdentifiers.EmptyChapter)
+                {
+                    c.Questions.ForEach(i =>
+                    {
+                        if (i.Type == QuestionType.DropDown && i.Answers.Any())
+                        {
+                            i.AnswerText = i.Answers[i.SelectedAnswerIndex].Text;
+                            i.AnswerCode = i.Answers[i.SelectedAnswerIndex].Code;
+                        }
+                        i.Answers = null;
+                    });
+                }
+            });
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private bool _isBusy;
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set
+            {
+                _isBusy = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+}

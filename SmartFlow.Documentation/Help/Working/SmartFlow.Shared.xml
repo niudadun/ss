@@ -1,0 +1,210 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SmartFlow.Shared</name>
+    </assembly>
+    <members>
+        <member name="M:SmartFlow.Shared.App.#ctor">
+            <summary>
+             This is the start of App
+            </summary>
+                    
+        </member>
+        <member name="T:SmartFlow.Shared.Data.DatabaseContext">
+            <summary>
+            
+            </summary>
+            <seealso cref="T:Microsoft.EntityFrameworkCore.DbContext" />
+        </member>
+        <member name="P:SmartFlow.Shared.Data.DatabaseContext.Profiles">
+            <summary>
+            Gets or sets the profiles.
+            </summary>
+            <value>
+            The profiles.
+            </value>
+        </member>
+        <member name="P:SmartFlow.Shared.Data.DatabaseContext.Declarations">
+            <summary>
+            Gets or sets the declarations.
+            </summary>
+            <value>
+            The declarations.
+            </value>
+        </member>
+        <member name="M:SmartFlow.Shared.Data.DatabaseContext.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SmartFlow.Shared.Data.DatabaseContext"/> class.
+            </summary>
+            <param name="databasePath">The database path.</param>
+        </member>
+        <member name="M:SmartFlow.Shared.Data.DatabaseContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+            <summary>
+            <para>
+            Override this method to configure the database (and other options) to be used for this context.
+            This method is called for each instance of the context that is created.
+            </para>
+            <para>
+            In situations where an instance of <see cref="T:Microsoft.EntityFrameworkCore.DbContextOptions" /> may or may not have been passed
+            to the constructor, you can use <see cref="P:Microsoft.EntityFrameworkCore.DbContextOptionsBuilder.IsConfigured" /> to determine if
+            the options have already been set, and skip some or all of the logic in
+            <see cref="M:Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)" />.
+            </para>
+            </summary>
+            <param name="optionsBuilder">A builder used to create or modify options for this context. Databases (and other extensions)
+            typically define extension methods on this object that allow you to configure the context.</param>
+        </member>
+        <member name="M:SmartFlow.Shared.Data.DatabaseContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <summary>
+            Override this method to further configure the model that was discovered by convention from the entity types
+            exposed in <see cref="T:Microsoft.EntityFrameworkCore.DbSet`1" /> properties on your derived context. The resulting model may be cached
+            and re-used for subsequent instances of your derived context.
+            </summary>
+            <param name="modelBuilder">The builder being used to construct the model for this context. Databases (and other extensions) typically
+            define extension methods on this object that allow you to configure aspects of the model that are specific
+            to a given database.</param>
+            <remarks>
+            If a model is explicitly set on the options for this context (via <see cref="M:Microsoft.EntityFrameworkCore.DbContextOptionsBuilder.UseModel(Microsoft.EntityFrameworkCore.Metadata.IModel)" />)
+            then this method will not be run.
+            </remarks>
+        </member>
+        <member name="T:SmartFlow.Shared.Helpers.Interfaces.ILocale">
+            <summary>
+            Implementations of this interface MUST convert iOS and Android
+            platform-specific locales to a value supported in .NET because
+            ONLY valid .NET cultures can have their RESX resources loaded and used.
+            </summary>
+            <remarks>
+            Lists of valid .NET cultures can be found here:
+              http://www.localeplanet.com/dotnet/
+              http://www.csharp-examples.net/culture-names/
+            You should always test all the locales implemented in your application.
+            </remarks>
+        </member>
+        <member name="M:SmartFlow.Shared.Helpers.Interfaces.ILocale.GetCurrentCultureInfo">
+            <summary>
+            This method must evaluate platform-specific locale settings
+            and convert them (when necessary) to a valid .NET locale.
+            </summary>
+        </member>
+        <member name="M:SmartFlow.Shared.Helpers.Interfaces.ILocale.SetLocale(System.Globalization.CultureInfo)">
+            <summary>
+            CurrentCulture and CurrentUICulture must be set in the platform project, 
+            because the Thread object can't be accessed in a PCL.
+            </summary>
+        </member>
+        <member name="T:SmartFlow.Shared.Helpers.Interfaces.PlatformCulture">
+            <summary>
+            Helper class for splitting locales like
+              iOS: ms_MY, gsw_CH
+              Android: in-ID
+            into parts so we can create a .NET culture (or fallback culture)
+            </summary>
+        </member>
+        <member name="T:SmartFlow.Shared.Helpers.L10n">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:SmartFlow.Shared.Helpers.L10n.SetLocale(System.Globalization.CultureInfo)">
+            <summary>
+            Sets the locale.
+            </summary>
+            <param name="ci">The ci.</param>
+        </member>
+        <member name="M:SmartFlow.Shared.Helpers.L10n.Locale">
+            <remarks>
+            Maybe we can cache this info rather than querying every time
+            </remarks>
+        </member>
+        <member name="M:SmartFlow.Shared.Helpers.L10n.Localize(System.String,System.String)">
+            <summary>
+            Localizes the specified key.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="comment">The comment.</param>
+            <returns></returns>
+        </member>
+        <member name="T:SmartFlow.Shared.Helpers.Settings">
+            <summary>
+            This is the Settings static class that can be used in your Core solution or in any
+            of your client applications. All settings are laid out the same exact way with getters
+            and setters. 
+            </summary>
+        </member>
+        <member name="T:SmartFlow.Shared.Resources.AppResources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.BackNavButton">
+            <summary>
+              Looks up a localized string similar to Back.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.CreateDeclarationButton">
+            <summary>
+              Looks up a localized string similar to Create Declaration.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.LanguageButton">
+            <summary>
+              Looks up a localized string similar to Select Language.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.LoadingInfo">
+            <summary>
+              Looks up a localized string similar to Please wait.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.ManageDeclarationButton">
+            <summary>
+              Looks up a localized string similar to Manage Declaration.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.ManageProfileButton">
+            <summary>
+              Looks up a localized string similar to Manage profile.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.ProfileSaveSuccessInfo">
+            <summary>
+              Looks up a localized string similar to Profile Successfully create.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.ServicesButton">
+            <summary>
+              Looks up a localized string similar to Enter Services.
+            </summary>
+        </member>
+        <member name="P:SmartFlow.Shared.Resources.AppResources.SubmitButton">
+            <summary>
+              Looks up a localized string similar to Submit.
+            </summary>
+        </member>
+        <member name="M:SmartFlow.Shared.Views.LanguagePage.GetDataTemplate">
+            <summary>
+            Gets the data template.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SmartFlow.Shared.Views.LanguagePage.CreateNewGrid(System.Collections.Generic.List{SmartFlow.Shared.Models.Language},System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Creates the new grid.
+            </summary>
+            <param name="buttons">The buttons.</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

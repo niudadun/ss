@@ -1,0 +1,116 @@
+﻿using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// QRPage Page View
+    /// </summary>
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class QRPage : ContentPage
+    {
+        private static string TAG = "QRPage";
+
+        /// <summary>
+        /// State from which this page is called.
+        /// </summary>
+        Enums.EnumMaps Mode;
+
+        /// <summary>
+        /// Success Page constructor
+        /// </summary>
+        /// 
+        public QRPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+            SetPageText();
+            
+            FooterViewId.SetBackButtonVisible(false);
+            FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.NEXT_TEXT)).Clicked += OnDoneClicked;
+        }
+
+        /// <summary>
+        /// Success Page constructor with state info
+        /// </summary>
+        /// 
+        public QRPage(InfoHolder infoHolder)
+        {
+            InitializeComponent();
+            SetPageText();
+
+            FooterViewId.SetBackButtonVisible(false);
+            FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.DONE_TEXT)).Clicked += OnDoneClicked;
+
+            Mode = infoHolder.getwhichMode();
+
+            if (Mode == Enums.EnumMaps.DECLARATION_PREVIEW_MODE)
+            {
+                QrImage.Source = (FileImageSource)ImageSource.FromFile("QR");
+                dNoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.DE_NO) + " : " + infoHolder.deNo.ToUpper();
+                NameText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NAME) + " : " + infoHolder.profileName;
+                TripDateText.Text = infoHolder.tripID + " : " + infoHolder.date;
+            }
+            else if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+            {
+                QrImage.Source = (FileImageSource)ImageSource.FromFile("QR");
+                dNoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.DE_NO) + " : " + infoHolder.deNo.ToUpper();
+                NameText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NAME) + " : " + infoHolder.profileName;
+                TripDateText.Text = infoHolder.tripID + " : " + infoHolder.date;
+            }
+        }
+
+        /// <summary>
+        /// Method to set the text/properties for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+           
+        }
+
+        /// <summary>
+        /// Done Action button clicked.
+        /// based on the state from which this page is called, app will decide how many pages are required to be popped out,
+        /// so that profile list can be visible
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnDoneClicked(object sender, EventArgs e)
+        {
+            OnBackButtonPressed();
+        }
+
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            if (Mode == Enums.EnumMaps.DECLARATION_PREVIEW_MODE)
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.LanguageSelectionDialogPage.ToString(), new InfoHolder(-1,Enums.EnumMaps.SUBMIT_ANOTHER_DECLARATION), false);
+                });
+            }
+            else if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+            {
+                App.NavigationService.GoBack(false);
+            }
+            return true;
+        }
+    }
+}

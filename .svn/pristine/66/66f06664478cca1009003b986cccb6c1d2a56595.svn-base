@@ -1,0 +1,122 @@
+﻿using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// QRPage Page View
+    /// </summary>
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class QRPage : ContentPage
+    {
+        private static string TAG = "QRPage";
+
+        /// <summary>
+        /// State from which this page is called.
+        /// </summary>
+        Enums.EnumMaps Mode;
+
+        /// <summary>
+        /// Success Page constructor
+        /// </summary>
+        /// 
+        public QRPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            SetPageText();
+            
+            FooterViewId.SetBackButtonVisible(false);
+            FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.NEXT_TEXT)).Clicked += OnDoneClicked;
+        }
+
+        /// <summary>
+        /// Success Page constructor with state info
+        /// </summary>
+        /// 
+        public QRPage(InfoHolder infoHolder)
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            SetPageText();
+
+            FooterViewId.SetBackButtonVisible(false);
+            FooterViewId.SetButtonHandling("").Clicked += OnDoneClicked;
+
+            //Mode = infoHolder.Mode;
+
+            //if (Mode == Enums.EnumMaps.DECLARATION_PREVIEW_MODE_SINGLE_PROFILE || Mode == Enums.EnumMaps.DECLARATION_PREVIEW_MODE_UPDATE_SCREEN)
+            //{
+            //    FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.NEXT_TEXT));
+            //    QrImage.Source = (FileImageSource)ImageSource.FromFile("QR");
+            //    dNoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.DE_NO) + " : " + infoHolder.DeNo.ToUpper();
+            //    NameText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NAME) + " : " + infoHolder.ProfileName;
+            //    TripDateText.Text = infoHolder.TripID + " : " + infoHolder.Date;
+            //}
+            //else if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+            //{
+            //    FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.DONE_TEXT));
+            //    QrImage.Source = (FileImageSource)ImageSource.FromFile("QR");
+            //    dNoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.DE_NO) + " : " + infoHolder.DeNo.ToUpper();
+            //    NameText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NAME) + " : " + infoHolder.ProfileName;
+            //    //TripDateText.Text = infoHolder.TripID + " : " + infoHolder.Date;
+            //}
+        }
+
+        /// <summary>
+        /// Method to set the text/properties for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+           
+        }
+
+        /// <summary>
+        /// Done Action button clicked.
+        /// based on the state from which this page is called, app will decide how many pages are required to be popped out,
+        /// so that profile list can be visible
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnDoneClicked(object sender, EventArgs e)
+        {
+            OnBackButtonPressed();
+        }
+
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            if (Mode == Enums.EnumMaps.DECLARATION_PREVIEW_MODE_SINGLE_PROFILE || Mode == Enums.EnumMaps.DECLARATION_PREVIEW_MODE_UPDATE_SCREEN)
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.LanguageSelectionDialogPage.ToString(), new InfoHolder(-1,Enums.EnumMaps.SUBMIT_ANOTHER_DECLARATION), false);
+                });
+            }
+            else if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+            {
+                App.NavigationService.GoBack(false);
+            }
+            return true;
+        }
+    }
+}

@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             xmlns:views="clr-namespace:SmartFlow.Shared.Views"
+             x:Class="SmartFlow.Shared.Views.MainMenuPage">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="26*" />
+            <RowDefinition Height="62*" />
+            <RowDefinition Height="12*" />
+        </Grid.RowDefinitions>
+        <StackLayout Grid.Row="0" AutomationId="AutomationId_Stacklayout_Header" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Padding="0">
+            <views:HeaderViewBig x:Name="HeaderViewID" AutomationId="AutomationId_HeaderView" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
+        </StackLayout>
+        <StackLayout AutomationId="AutomationId_ContentView" VerticalOptions="CenterAndExpand" Grid.Row="1">
+            <Grid ColumnSpacing="20" RowSpacing="35" Padding="15" AutomationId="AutomationId_GridView">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40*" />
+                    <ColumnDefinition Width="60*" />
+                </Grid.ColumnDefinitions>
+                <Button Pressed="ManageProfilePressed" Focused="ManageProfileFocused" Released="ManageProfileReleased" 
+                        AutomationId="AutomationId_btnManageProfile" Image="ic_profile_blue" Style="{StaticResource LanguageBtn}" 
+                        HorizontalOptions="End" Grid.Row="0" Grid.Column="0" Clicked="ManageProfile" />
+                <StackLayout Grid.Row="0" Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                    <Label x:Name="Profiles" VerticalTextAlignment="Center"  Style="{StaticResource StandardFont}" LineBreakMode="WordWrap"  HorizontalOptions="FillAndExpand" />
+                </StackLayout>
+                <Button Pressed="CreateDeclarationPressed" Focused="CreateDeclarationFocused" Released="CreateDeclarationReleased" 
+                        AutomationId="AutomationId_btnCreateDeclaration" Image="ic_new_declaration_blue" Style="{StaticResource LanguageBtn}" 
+                        HorizontalOptions="End" Grid.Row="1" Grid.Column="0" Clicked="CreateDeclaration" />
+                <StackLayout Grid.Row="1" Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                    <Label x:Name="CreateDeclarationLabel" VerticalTextAlignment="Center"  Style="{StaticResource StandardFont}" LineBreakMode="WordWrap"  HorizontalOptions="FillAndExpand" />
+                </StackLayout>
+                <Button Pressed="ManageDeclarationPressed" Focused="ManageDeclarationFocused" Released="ManageDeclarationReleased" 
+                        AutomationId="AutomationId_btnManageDeclaration" Image="ic_manage_delcaration_blue" Style="{StaticResource LanguageBtn}" 
+                        HorizontalOptions="End" Grid.Row="2" Grid.Column="0" Clicked="ManageDeclaration" />
+                <StackLayout Grid.Row="2" Grid.Column="1" Spacing="0" VerticalOptions="Center">                    
+                    <Label x:Name="ManageDeclarationLabel" VerticalTextAlignment="Center"  Style="{StaticResource StandardFont}" LineBreakMode="WordWrap"  HorizontalOptions="FillAndExpand" />
+                </StackLayout>                
+            </Grid>
+        </StackLayout>
+        <StackLayout AutomationId="AutomationId_StackLayout_Footer" Orientation="Horizontal" Grid.Row="2">
+            <views:FooterView AutomationId="AutomationId_FooterView"/>
+        </StackLayout>
+
+    </Grid>
+</ContentPage>

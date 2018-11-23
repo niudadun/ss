@@ -1,0 +1,197 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
+using System.Collections.Generic;
+
+namespace SmartFlow.Shared.Migrations
+{
+    public partial class InitialMigration : Migration
+    {
+        /// <summary>
+        /// Create tables includes Profiles, validationConfig, Decalrations, Chapter, Question and Answers.
+        /// </summary>
+        /// <param name="migrationBuilder"></param>
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "Profiles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CountryOfBirth = table.Column<string>(nullable: true),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    DateOfBirth = table.Column<DateTime>(nullable: false),
+                    Gender = table.Column<string>(nullable: true),
+                    LastModifiedDate = table.Column<DateTime>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Nationality = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Profiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ValidationConfig",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    MaxDate = table.Column<string>(nullable: true),
+                    MaxLength = table.Column<int>(nullable: false),
+                    MinLength = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ValidationConfig", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Declarations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CreatedDate = table.Column<string>(nullable: true),
+                    DeclarationType = table.Column<int>(nullable: false),
+                    Language = table.Column<string>(nullable: true),
+                    LastUpdatedDate = table.Column<string>(nullable: true),
+                    ProfileId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Declarations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Declarations_Profiles_ProfileId",
+                        column: x => x.ProfileId,
+                        principalTable: "Profiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Chapter",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    DeclarationId = table.Column<int>(nullable: true),
+                    Order = table.Column<int>(nullable: false),
+                    Text = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Chapter", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Chapter_Declarations_DeclarationId",
+                        column: x => x.DeclarationId,
+                        principalTable: "Declarations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Question",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AnswerText = table.Column<string>(nullable: true),
+                    ChapterId = table.Column<int>(nullable: false),
+                    ConfigId = table.Column<int>(nullable: true),
+                    DeclarationId = table.Column<int>(nullable: true),
+                    IsHidden = table.Column<bool>(nullable: false),
+                    IsRequired = table.Column<bool>(nullable: false),
+                    Order = table.Column<int>(nullable: false),
+                    Text = table.Column<string>(nullable: true),
+                    Type = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Question", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Question_ValidationConfig_ConfigId",
+                        column: x => x.ConfigId,
+                        principalTable: "ValidationConfig",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Question_Declarations_DeclarationId",
+                        column: x => x.DeclarationId,
+                        principalTable: "Declarations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Answer",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Order = table.Column<int>(nullable: false),
+                    QuestionId = table.Column<int>(nullable: true),
+                    Text = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Answer", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Answer_Question_QuestionId",
+                        column: x => x.QuestionId,
+                        principalTable: "Question",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Answer_QuestionId",
+                table: "Answer",
+                column: "QuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Chapter_DeclarationId",
+                table: "Chapter",
+                column: "DeclarationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Declarations_ProfileId",
+                table: "Declarations",
+                column: "ProfileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Question_ConfigId",
+                table: "Question",
+                column: "ConfigId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Question_DeclarationId",
+                table: "Question",
+                column: "DeclarationId");
+        }
+        /// <summary>
+        /// Drop tables.
+        /// </summary>
+        /// <param name="migrationBuilder"></param>
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "Answer");
+
+            migrationBuilder.DropTable(
+                name: "Chapter");
+
+            migrationBuilder.DropTable(
+                name: "Question");
+
+            migrationBuilder.DropTable(
+                name: "ValidationConfig");
+
+            migrationBuilder.DropTable(
+                name: "Declarations");
+
+            migrationBuilder.DropTable(
+                name: "Profiles");
+        }
+    }
+}

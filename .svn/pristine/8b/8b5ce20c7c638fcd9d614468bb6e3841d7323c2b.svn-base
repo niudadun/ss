@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             x:Class="SmartFlow.Shared.Views.ProfileListItemView"
+             xmlns:controls="clr-namespace:ImageCircle.Forms.Plugin.Abstractions;assembly=ImageCircle.Forms.Plugin.Abstractions">
+    <ContentView>
+        <Grid ColumnSpacing="15" RowSpacing="3" Padding="0" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="45*" />
+                <ColumnDefinition Width="55*" />
+            </Grid.ColumnDefinitions>
+            <controls:CircleImage x:Name="ProfileImage" WidthRequest="80" HeightRequest="80" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFill" 
+                              BackgroundColor="Transparent" Source="ic_profile_pic" Grid.Column="0"/>
+            <StackLayout Grid.Column="1" HorizontalOptions="Start" VerticalOptions="CenterAndExpand" Orientation="Vertical">
+                <Label x:Name="ProfileCount" HorizontalOptions="Start" VerticalOptions="Center" Style="{StaticResource StandardFont}"/>
+                <Label x:Name="ProfileName" HorizontalOptions="Start" VerticalOptions="Center" Style="{StaticResource StandardFont}"/>
+            </StackLayout>
+        </Grid>
+    </ContentView>
+</ViewCell>

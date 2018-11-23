@@ -1,0 +1,578 @@
+﻿using SmartFlow.Shared.Enums;
+using SmartFlow.Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SmartFlow.Shared.DataTemplates
+{
+    /// <summary>
+    /// This class is used to save template for the Profile questions which will be populated in the input view.
+    /// </summary>
+    class ProfileTemplate
+    {
+        private static string TAG = "ProfileTemplate";
+
+        /// <summary>
+        /// Function to create Profile template
+        /// </summary>
+        /// <returns></returns>
+        public static Profile CreateProfile()
+        {
+            var proifleTemplate = new Profile()
+            {
+                CreatedDate = DateTime.Now.ToString(Shared.Helpers.Utils.CLIENT_DATE_FORMAT),
+                LastUpdatedDate = DateTime.Now.ToString(Shared.Helpers.Utils.CLIENT_DATE_FORMAT),
+                Chapters = CreateProfileChapters(),
+                Language = "English"
+            };
+
+            return proifleTemplate;
+        }
+
+        /// <summary>
+        /// Method to add chapters/questions/allowed options etc to the profile template.
+        /// This template is then used to add the views in the input screen.
+        /// Since we already know the questions in the profile screen, hence we can hardcode this template here.
+        /// Question text will be picked from the Api label mapping.
+        /// </summary>
+        /// <returns></returns>
+        public static List<Chapter> CreateProfileChapters()
+        {
+            var chapters = new List<Chapter>()
+            {
+                new Chapter()
+                {
+                     Order = 1,
+                     Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PARTICULARS),
+                     ChapterIdentifier = ChapterIdentifiers.Particulars,
+                     Questions = new List<Question>()
+                     {
+                         new Question()
+                        {
+                             QuestionKey = "name",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.FULLNAME),
+                             Order =1,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.FULLNAME,
+                             isMandatory = true,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 30,
+                                 ValidateSpecialCharacters = true,
+                                 IsRequired = true,
+                             }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "sex",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.SEX),
+                             Order =2,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.SEX,
+                             isMandatory = true,
+                             Answers = new List<Answer>()
+                             {
+                                 new Answer()
+                                 {
+                                     Order =1,
+                                     Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT),
+                                 },
+                                 new Answer()
+                                 {
+                                     Order =2,
+                                     Code = "M",
+                                     Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.Male)
+                                 },
+                                 new Answer()
+                                 {
+                                     Order =3,
+                                     Code = "F",
+                                     Text = Helpers.L10n.GetDropDowneMappedString(DropDownData.Female),
+                                 }
+
+                             }
+                        },
+                         new Question()
+                        {
+                             QuestionKey = "dateOfBirth",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.DATE_OF_BIRTH),
+                             Order =3,
+                             Type = QuestionType.Date,
+                             QuestionIdentifier = QuestionIdenfiers.DATE_OF_BIRTH,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxDate = DateTime.Now,
+                                 MinDate = new DateTime(1900,01,01)
+                             }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "ctryBirth",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.COUNTRY_OF_BIRTH),
+                             Order =8,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.COUNTRY_OF_BIRTH,
+                             Answers = StaticData.GetCountryList(QuestionIdenfiers.COUNTRY_OF_BIRTH),
+                             isMandatory = true
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "natcd",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.NATIONALITY),
+                             Order =9,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.NATIONALITY,
+                             Answers = StaticData.GetCountryList(QuestionIdenfiers.NATIONALITY),
+                             isMandatory = true
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "mid",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.IDENTITY_CARD_NUMBER),
+                             Order =10,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.IDENTITY_CARD_NUMBER,
+                             IsVisible = false,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 30,
+                                 IsRequired = true,
+                             }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "tdno",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PASSPORT_NUMBER),
+                             Order =11,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.PASSPORT_NUMBER,
+                             isMandatory = true,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 30,
+                                 IsRequired = true,
+                             }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "tdExpiryDate",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PASSPORT_EXPIRY),
+                             Order =12,
+                             Type = QuestionType.Date,
+                             QuestionIdentifier = QuestionIdenfiers.PASSPORT_EXPIRY,
+                             AnswerText = DateTime.Now.ToString(Shared.Helpers.Utils.DATE_FORMAT),
+                             Config = new ValidationConfig()
+                             {
+                                 MinDate = DateTime.Now,
+                                 MaxDate = DateTime.Now.AddYears(10)
+                             }
+                        },
+                        new Question()
+                        { 
+                            // No place of Residence required in Profile as per Design
+                            QuestionKey = "placeResidence",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PLACE_OF_RESIDENCE),
+                             Order =4,
+                             IsVisible = false,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.PLACE_OF_RESIDENCE,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 30,
+                             }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "residenceCtry",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.COUNTRY_OF_RESIDENCE),
+                             Order =5,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.COUNTRY_OF_RESIDENCE,
+                             Answers = StaticData.GetCountryList(QuestionIdenfiers.COUNTRY_OF_RESIDENCE),
+                             isMandatory = true
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "residenceState",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.STATE_OF_RESIDENCE),
+                             Order =6,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.STATE_OF_RESIDENCE,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 30,
+                             }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "residenceCity",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.CITY_OF_RESIDENCE),
+                             Order =7,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.CITY_OF_RESIDENCE,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 30,
+                             }
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "contactNoCtry",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PHONE_NUMBER_COUNTRY),
+                             Order =9,
+                             Type = QuestionType.DropDown,
+                             QuestionIdentifier = QuestionIdenfiers.PHONE_NUMBER_COUNTRY,
+                             Answers = StaticData.GetCountryList(QuestionIdenfiers.PHONE_NUMBER_COUNTRY),
+                             isMandatory = true
+                        },
+                        new Question()
+                        {
+                            QuestionKey = "contactNo",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.PHONE_NUMBER),
+                             Order =13,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.PHONE_NUMBER,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 12,
+                                 ValidateContactNumber = true,
+                             }
+                        },
+                        new Question()
+                        {
+                             QuestionKey = "emailAddr",
+                             Text = Helpers.L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.EMAIL),
+                             Order =14,
+                             Type = QuestionType.Text,
+                             QuestionIdentifier = QuestionIdenfiers.EMAIL,
+                             Config = new ValidationConfig()
+                             {
+                                 MaxLength = 50,
+                                 ValidateEmailAddress = true,
+                             }
+                        }
+                     }
+                },
+                 new Chapter()
+                {
+                     Order = 2,
+                     Text = "",
+                     ChapterIdentifier = ChapterIdentifiers.EmptyChapter
+                 },
+                 new Chapter()
+                {
+                     Order = 3,
+                     Text = "",
+                     ChapterIdentifier = ChapterIdentifiers.EmptyChapter
+                 },
+                 new Chapter()
+                {
+                     Order = 4,
+                     Text = "",
+                     ChapterIdentifier = ChapterIdentifiers.EmptyChapter
+                 },
+                 new Chapter()
+                {
+                     Order = 5,
+                     Text = "",
+                     ChapterIdentifier = ChapterIdentifiers.EmptyChapter
+                 },
+                 new Chapter()
+                {
+                     Order = 6,
+                     Text = "",
+                     ChapterIdentifier = ChapterIdentifiers.EmptyChapter
+                 }
+            };
+
+            return chapters;
+        }
+    }
+
+    /// <summary>
+    /// Static Data information
+    /// </summary>
+    public class StaticData
+    {
+        /// <summary>
+        /// Get the list of countries for selection
+        /// </summary>
+        /// <returns></returns>
+        public static List<Answer> GetCountryList(QuestionIdenfiers QuestionIdentifier)
+        {
+            var list = GetCountryListString();
+            var answersList = new List<Answer>
+            {
+                new Answer()
+                {
+                    Text =  Helpers.L10n.GetMappedString(TextMapping.SELECT_TEXT)
+                }
+            };
+            foreach (var s in list)
+            {
+                var ans = new Answer()
+                {
+                    Text = s
+                };
+                if (QuestionIdentifier == QuestionIdenfiers.NATIONALITY && ans.Text == "Malaysia")
+                {
+                    ans.ConditionalQuestion = new List<ConditionalQuestion>();
+                    ans.ConditionalQuestion.Add(new ConditionalQuestion(QuestionIdenfiers.IDENTITY_CARD_NUMBER));
+                }
+                answersList.Add(ans);
+            }
+            return answersList;
+        }
+
+        /// <summary>
+        /// Countries string array
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetCountryListString()
+        {
+            return new List<string>()
+                             {
+                                    "Afghanistan",
+                                    "Albania",
+                                    "Algeria",
+                                    "American Samoa",
+                                    "Andorra",
+                                    "Angola",
+                                    "Anguilla",
+                                    "Antarctica",
+                                    "Antigua and Barbuda",
+                                    "Argentina",
+                                    "Armenia",
+                                    "Aruba",
+                                    "Australia",
+                                    "Austria",
+                                    "Azerbaijan",
+                                    "Bahamas",
+                                    "Bahrain",
+                                    "Bangladesh",
+                                    "Barbados",
+                                    "Belarus",
+                                    "Belgium",
+                                    "Belize",
+                                    "Benin",
+                                    "Bermuda",
+                                    "Bhutan",
+                                    "Bolivia",
+                                    "Bosnia and Herzegovina",
+                                    "Botswana",
+                                    "Bouvet Island",
+                                    "Brazil",
+                                    "British Indian Ocean Territory",
+                                    "Brunei Darussalam",
+                                    "Bulgaria",
+                                    "Burkina Faso",
+                                    "Burundi",
+                                    "Cambodia",
+                                    "Cameroon",
+                                    "Canada",
+                                    "Cape Verde",
+                                    "Cayman Islands",
+                                    "Central African Republic",
+                                    "Chad",
+                                    "Chile",
+                                    "China",
+                                    "Christmas Island",
+                                    "Cocos (Keeling) Islands",
+                                    "Colombia",
+                                    "Comoros",
+                                    "Congo",
+                                    "Congo, the Democratic Republic of the",
+                                    "Cook Islands",
+                                    "Costa Rica",
+                                    "Cote D'Ivoire",
+                                    "Croatia",
+                                    "Cuba",
+                                    "Cyprus",
+                                    "Czech Republic",
+                                    "Denmark",
+                                    "Djibouti",
+                                    "Dominica",
+                                    "Dominican Republic",
+                                    "Ecuador",
+                                    "Egypt",
+                                    "El Salvador",
+                                    "Equatorial Guinea",
+                                    "Eritrea",
+                                    "Estonia",
+                                    "Ethiopia",
+                                    "Falkland Islands (Malvinas)",
+                                    "Faroe Islands",
+                                    "Fiji",
+                                    "Finland",
+                                    "France",
+                                    "French Guiana",
+                                    "French Polynesia",
+                                    "French Southern Territories",
+                                    "Gabon",
+                                    "Gambia",
+                                    "Georgia",
+                                    "Germany",
+                                    "Ghana",
+                                    "Gibraltar",
+                                    "Greece",
+                                    "Greenland",
+                                    "Grenada",
+                                    "Guadeloupe",
+                                    "Guam",
+                                    "Guatemala",
+                                    "Guinea",
+                                    "Guinea-Bissau",
+                                    "Guyana",
+                                    "Haiti",
+                                    "Heard Island and Mcdonald Islands",
+                                    "Holy See (Vatican City State)",
+                                    "Honduras",
+                                    "Hong Kong",
+                                    "Hungary",
+                                    "Iceland",
+                                    "India",
+                                    "Indonesia",
+                                    "Iran, Islamic Republic of",
+                                    "Iraq",
+                                    "Ireland",
+                                    "Israel",
+                                    "Italy",
+                                    "Jamaica",
+                                    "Japan",
+                                    "Jordan",
+                                    "Kazakhstan",
+                                    "Kenya",
+                                    "Kiribati",
+                                    "Korea, Democratic People's Republic of",
+                                    "Korea, Republic of",
+                                    "Kuwait",
+                                    "Kyrgyzstan",
+                                    "Lao People's Democratic Republic",
+                                    "Latvia",
+                                    "Lebanon",
+                                    "Lesotho",
+                                    "Liberia",
+                                    "Libyan Arab Jamahiriya",
+                                    "Liechtenstein",
+                                    "Lithuania",
+                                    "Luxembourg",
+                                    "Macao",
+                                    "Macedonia, the Former Yugoslav Republic of",
+                                    "Madagascar",
+                                    "Malawi",
+                                    "Malaysia",
+                                    "Maldives",
+                                    "Mali",
+                                    "Malta",
+                                    "Marshall Islands",
+                                    "Martinique",
+                                    "Mauritania",
+                                    "Mauritius",
+                                    "Mayotte",
+                                    "Mexico",
+                                    "Micronesia, Federated States of",
+                                    "Moldova, Republic of",
+                                    "Monaco",
+                                    "Mongolia",
+                                    "Montserrat",
+                                    "Morocco",
+                                    "Mozambique",
+                                    "Myanmar",
+                                    "Namibia",
+                                    "Nauru",
+                                    "Nepal",
+                                    "Netherlands",
+                                    "Netherlands Antilles",
+                                    "New Caledonia",
+                                    "New Zealand",
+                                    "Nicaragua",
+                                    "Niger",
+                                    "Nigeria",
+                                    "Niue",
+                                    "Norfolk Island",
+                                    "Northern Mariana Islands",
+                                    "Norway",
+                                    "Oman",
+                                    "Pakistan",
+                                    "Palau",
+                                    "Palestinian Territory, Occupied",
+                                    "Panama",
+                                    "Papua New Guinea",
+                                    "Paraguay",
+                                    "Peru",
+                                    "Philippines",
+                                    "Pitcairn",
+                                    "Poland",
+                                    "Portugal",
+                                    "Puerto Rico",
+                                    "Qatar",
+                                    "Reunion",
+                                    "Romania",
+                                    "Russian Federation",
+                                    "Rwanda",
+                                    "Saint Helena",
+                                    "Saint Kitts and Nevis",
+                                    "Saint Lucia",
+                                    "Saint Pierre and Miquelon",
+                                    "Saint Vincent and the Grenadines",
+                                    "Samoa",
+                                    "San Marino",
+                                    "Sao Tome and Principe",
+                                    "Saudi Arabia",
+                                    "Senegal",
+                                    "Serbia and Montenegro",
+                                    "Seychelles",
+                                    "Sierra Leone",
+                                    "Singapore",
+                                    "Slovakia",
+                                    "Slovenia",
+                                    "Solomon Islands",
+                                    "Somalia",
+                                    "South Africa",
+                                    "South Georgia and the South Sandwich Islands",
+                                    "Spain",
+                                    "Sri Lanka",
+                                    "Sudan",
+                                    "Suriname",
+                                    "Svalbard and Jan Mayen",
+                                    "Swaziland",
+                                    "Sweden",
+                                    "Switzerland",
+                                    "Syrian Arab Republic",
+                                    "Taiwan, Province of China",
+                                    "Tajikistan",
+                                    "Tanzania, United Republic of",
+                                    "Thailand",
+                                    "Timor-Leste",
+                                    "Togo",
+                                    "Tokelau",
+                                    "Tonga",
+                                    "Trinidad and Tobago",
+                                    "Tunisia",
+                                    "Turkey",
+                                    "Turkmenistan",
+                                    "Turks and Caicos Islands",
+                                    "Tuvalu",
+                                    "Uganda",
+                                    "Ukraine",
+                                    "United Arab Emirates",
+                                    "United Kingdom",
+                                    "United States",
+                                    "United States Minor Outlying Islands",
+                                    "Uruguay",
+                                    "Uzbekistan",
+                                    "Vanuatu",
+                                    "Venezuela",
+                                    "Viet Nam",
+                                    "Virgin Islands, British",
+                                    "Virgin Islands, US",
+                                    "Wallis and Futuna",
+                                    "Western Sahara",
+                                    "Yemen",
+                                    "Zambia",
+                                    "Zimbabwe",
+                             };
+        }
+    }
+}

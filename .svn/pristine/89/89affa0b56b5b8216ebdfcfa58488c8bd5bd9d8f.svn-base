@@ -1,0 +1,104 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	<DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\ManageProfilePage.xaml.cs.mine" />
+    <None Remove="Views\ManageProfilePage.xaml.cs.r96" />
+    <None Remove="Views\ManageProfilePage.xaml.cs.r98" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="6.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Xam.Plugin.Media" Version="3.1.0.193-beta" />
+    <PackageReference Include="Xam.Plugins.Forms.ImageCircle" Version="1.8.1" />
+    <PackageReference Include="Xam.Plugins.Settings" Version="3.1.1" />
+    <PackageReference Include="Xamarin.Forms" Version="2.4.0.38779" />
+    <PackageReference Include="Xamarin.Forms.CarouselView" Version="2.3.0-pre2" />
+    <PackageReference Include="XLabs.Forms" Version="2.3.0-pre05" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\AppResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AppResources.resx</DependentUpon>
+      <Generator></Generator>
+    </Compile>
+    <Compile Update="Views\MainMenuPageTutorial.xaml.cs">
+      <DependentUpon>MainMenuPageTutorial.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\LanguageSelectionDialogPage.xaml.cs">
+      <DependentUpon>LanguageSelectionDialogPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ProfileListItemView.xaml.cs">
+      <DependentUpon>ProfileListItemView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\InfoView.xaml.cs">
+      <DependentUpon>InfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Button_layout.xaml.cs">
+      <DependentUpon>Button_layout.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\HeaderViewBig.xaml.cs">
+      <DependentUpon>HeaderViewBig.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ProfileCreateOptionsPage.xaml.cs">
+      <DependentUpon>ProfileCreateOptionsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ProfileInfoDialogPage.xaml.cs">
+      <DependentUpon>ProfileInfoDialogPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\QRPage.xaml.cs">
+      <DependentUpon>QRPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\AppResources.ms.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AppResource.ms.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.zh-Hans.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.ar.resx">
+      <LastGenOutput>AppResources.ar.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.vi.resx">
+      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.ta.resx">
+      <LastGenOutput>AppResources.ta.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.ko.resx">
+      <LastGenOutput>AppResources.ko.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.ja.resx">
+      <LastGenOutput>AppResources.ja.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.de.resx">
+      <LastGenOutput>AppResources..Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\AppResources.fr.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

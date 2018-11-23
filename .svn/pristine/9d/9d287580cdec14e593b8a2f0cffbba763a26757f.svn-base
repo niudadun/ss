@@ -1,0 +1,1015 @@
+﻿using SmartFlow.Shared.Behaviours;
+using SmartFlow.Shared.Converters;
+using SmartFlow.Shared.Enums;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using XLabs.Forms.Controls;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Create Declaration Class
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class CreateDeclarationPage : ContentPage
+    {
+        Dictionary<ChapterIdentifiers, ScrollView> layouts;
+        string currentView;
+        private static string TAG = "CreateDeclarationPage";
+
+        Enums.EnumMaps Mode;
+        DeclarationViewModel ViewModel;
+
+        int TripSelectedId = -1;
+        /// <summary>
+        /// Create declaration consturctor
+        /// </summary>
+        public CreateDeclarationPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            SetDataLayout();
+        }
+
+        /// <summary>
+        /// Create Declaration Page constructor with Profile id and Mode
+        /// </summary>
+        public CreateDeclarationPage(InfoHolder infoHolder)
+        {
+            try
+            {
+                InitializeComponent();
+                this.Padding = App.PagePadding;
+
+                Mode = infoHolder.getwhichMode();
+                ViewModel = new DeclarationViewModel(Navigation);
+
+                if (infoHolder.DeclarationId != 0)
+                {
+                    ViewModel = new DeclarationViewModel(Navigation, infoHolder.DeclarationId)
+                    {
+                        SelectedProfileId = infoHolder.getId()
+                    };
+                    ViewModel.LoadProfileAnswers(new List<Declaration>() { ViewModel.CurrentDeclaration });
+                    ViewModel.LoadDeclarationAnswers(new List<Declaration>() { ViewModel.CurrentDeclaration });
+                }
+                else if (infoHolder.getId() != -1)
+                {
+                    ProfileViewModel ProfileViewModel = new ProfileViewModel(Navigation, infoHolder.getId());
+                    ProfileViewModel.LoadAnswers();
+                    ViewModel.CurrentDeclaration.ProfileId = ProfileViewModel.CurrentProfile.Id;
+                    ViewModel.CurrentDeclaration.Profile.Chapters = ProfileViewModel.CurrentProfile.Chapters;
+                }
+                SetDataLayout();
+
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }        
+
+        void SetDataLayout()
+        {
+            FooterViewId.GetBackButtonAndRemoveClick().Clicked += OnBackclicked;
+            FooterViewId.SetButtonHandling("").Clicked += OnAddClicked;
+
+            List<Chapter> ProfileChapterList = ViewModel.CurrentDeclaration.Profile.Chapters.FindAll(i => (i != null && i.Questions != null && i.Questions.Count > 0));
+            List<Chapter> TripChaptersList = ViewModel.CurrentDeclaration.Chapters.FindAll(i => i.ChapterIdentifier == ChapterIdentifiers.Trip);
+            ViewModel.Chapters.AddRange(ProfileChapterList);
+            ViewModel.Chapters.AddRange(TripChaptersList);
+            BindingContext = ViewModel;
+            CreateMenuLayout(ViewModel.Chapters);
+
+            layouts = new Dictionary<ChapterIdentifiers, ScrollView>();
+
+            ProfileChapterList.ForEach(i => { layouts.Add(i.ChapterIdentifier, CreateDataLayout(i, true)); });
+
+            TripChaptersList.ForEach(i => { layouts.Add(i.ChapterIdentifier, CreateDataLayout(i)); });
+
+            var dataLayout = layouts[ChapterIdentifiers.Particulars];
+            var grid = this.FindByName<Grid>("MainGrid");
+            grid.Children.Add(dataLayout);
+            Grid.SetColumn(dataLayout, 1);
+            currentView = dataLayout.ClassId;
+
+            SetInformationForMenu();
+
+            if (Mode == Enums.EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                UpdateChapterView();
+            }
+        }
+
+        void SetInformationForMenu()
+        {
+            var dataLayout = layouts[ChapterIdentifiers.Particulars];
+            var stackLayout = (StackLayout)dataLayout.Content;
+            
+            if (Mode == Enums.EnumMaps.CREATE_DECLARATION)
+            {
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.SAVE_TEXT));
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+                ((ScrollView)layouts[ChapterIdentifiers.Particulars]).Content.IsEnabled = false;
+                ((ScrollView)layouts[ChapterIdentifiers.Trip]).Content.IsEnabled = true;
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE)
+            {
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PREVIEW_TEXT));
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+
+                ((ScrollView)layouts[ChapterIdentifiers.Particulars]).Content.IsEnabled = false;
+                ((ScrollView)layouts[ChapterIdentifiers.Trip]).Content.IsEnabled = true;
+
+                FooterViewId.SetNavigationBarVisible(true);
+                TripSelectedId = 0;
+                CreateNavBar();
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PREVIEW_TEXT));
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+
+                ((ScrollView)layouts[ChapterIdentifiers.Particulars]).Content.IsEnabled = false;
+                ((ScrollView)layouts[ChapterIdentifiers.Trip]).Content.IsEnabled = true;
+
+                FooterViewId.SetNavigationBarVisible(true);
+                CreateNavBar();
+            }
+            else if (Mode == EnumMaps.CREATE_DECLARATION_SELECTION_SCREEN)
+            {
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.ADD_TEXT));
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+
+                // Disabling the view, as this is a selection window
+                ((ScrollView)layouts[ChapterIdentifiers.Particulars]).Content.IsEnabled = false;
+                ((ScrollView)layouts[ChapterIdentifiers.Trip]).Content.IsEnabled = false;
+
+                // As of now we are not having Group handling. So disable button to add for Group View.
+                if (currentView == Enums.ChapterIdentifiers.Particulars.ToString())
+                {
+                    FooterViewId.SetButtonVisible(false);
+                }
+                else if (currentView == Enums.ChapterIdentifiers.Trip.ToString())
+                {
+                    FooterViewId.SetButtonVisible(true);
+                }
+            }
+            else if (Mode == EnumMaps.DECLARATION_PREVIEW_MODE)
+            {
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.SUBMIT_TEXT));
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+
+                // Disabling the view, as this is a selection window
+                ((ScrollView)layouts[ChapterIdentifiers.Particulars]).Content.IsEnabled = false;
+                ((ScrollView)layouts[ChapterIdentifiers.Trip]).Content.IsEnabled = false;
+
+                FooterViewId.SetNavigationBarVisible(true);
+                TripSelectedId = 0;
+                CreateNavBar();
+
+                var grid = this.FindByName<Grid>("MainGrid");
+                ScrollView scrollView = (ScrollView)grid.Children[0];
+                StackLayout stackLayoutMenu = (StackLayout)scrollView.Content;
+
+                List<Chapter> TripChapters = ViewModel.CurrentDeclaration.Chapters.FindAll(i => i.ChapterIdentifier == ChapterIdentifiers.Trip);
+                TripChapters[0].Text = L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP) + " 1 Preview";
+
+                foreach (View btn in stackLayoutMenu.Children)
+                {
+                    if (btn.ClassId == ChapterIdentifiers.Trip.ToString())
+                    {
+                        ((Button)btn).Text = L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP) + " 1 Preview";
+                        break;
+                    }
+                }
+            }
+        }
+
+        void ResetNavigationBar()
+        {
+            for (var k = 1; k <= 8; k++)
+            {
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "+")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnCreateClicked;
+                }
+                else if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "<")
+                {
+                    //FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavBackPage;
+                }
+                else if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == ">")
+                {
+                    //FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavNextPage;
+                }
+                else
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnSelectionTest;
+                }
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).Text = "";
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).IsVisible = false;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).BackgroundColor = Color.Transparent;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).TextColor = Color.Black;
+            }
+        }
+
+        /// <summary>
+        /// Create First page of Navigation bar
+        /// </summary>
+        public void CreateNavBar()
+        {
+            if (Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                List<Chapter> TripChaptersList = ViewModel.CurrentDeclaration.Chapters.FindAll(i => i.ChapterIdentifier == ChapterIdentifiers.Trip);
+
+                // Maximum trips at one time allowed are 3
+                ResetNavigationBar();
+
+                if (TripSelectedId !=-1 && TripSelectedId <= TripChaptersList.Count)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (TripSelectedId + 1)).BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (TripSelectedId + 1)).TextColor = Color.White;
+                }
+                
+                for (var j = 1; j <= TripChaptersList.Count; j++)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).IsVisible = true;
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).Text = j.ToString();
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).Clicked += OnSelectionTest;
+                }
+
+                if (TripChaptersList.Count < Utils.MAXIMUM_TRIPS_ALLOWED_ONE_TIME)
+                {
+                    if (Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+                    {
+                        FooterViewId.Content.FindByName<Button>("Nav_" + (TripChaptersList.Count + 1)).IsVisible = false;
+                    }
+                    else
+                    {
+                        FooterViewId.Content.FindByName<Button>("Nav_" + (TripChaptersList.Count + 1)).IsVisible = true;
+                    }
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (TripChaptersList.Count + 1)).Text = "+";
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (TripChaptersList.Count + 1)).Clicked -= OnSelectionTest;
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (TripChaptersList.Count + 1)).Clicked += OnCreateClicked;
+                }
+            }
+        }
+
+        private void OnSelectionTest(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            int id = Int16.Parse(btn.Text);
+
+            List<Chapter> TripChaptersList = ViewModel.CurrentDeclaration.Chapters.FindAll(i => i.ChapterIdentifier == ChapterIdentifiers.Trip);
+
+            if (Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                TripSelectedId = 0;
+            }
+            else
+            {
+                TripSelectedId = TripChaptersList[id - 1].Id;
+            }
+
+            GetViewInFront(TripChaptersList[id - 1].ChapterIdentifier.ToString());
+        }
+
+        private void OnAddClicked(object sender, EventArgs e)
+        {
+            if (Mode == EnumMaps.CREATE_DECLARATION_SELECTION_SCREEN)
+            {
+                Mode = EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE;
+                UpdateChapterView();
+            }
+            else if (Mode == EnumMaps.DECLARATION_PREVIEW_MODE)
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    ViewModel.CurrentDeclaration.DeclarationType = Models.Ede.Enums.DeclarationType.Submitted;
+                    ViewModel.CurrentDeclaration.DeNo = Utils.RandomString(10);
+
+                    FooterViewId.IsVisible = false;
+                    await ViewModel.ExecuteUpdateCommand();
+                    
+
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.SuccessPage.ToString(),
+                        new InfoHolder(ViewModel.CurrentDeclaration.ProfileId, Mode, ViewModel.CurrentDeclaration.Profile.Name, DateTime.Now.ToString(Utils.DATE_FORMAT),
+                         ViewModel.CurrentDeclaration.DeNo, L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP) + " 1"), false);
+                    FooterViewId.IsVisible = true;
+                });
+            }
+            else if (Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE)
+            {
+                // For preview only, we will do validation checks.
+                if (CheckValidation())
+                {
+                    SaveDeclaration(false);
+                }
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                // For preview only, we will do validation checks.
+                if (CheckValidation())
+                {
+                    SaveDeclaration(false);
+                }
+            }
+        }
+		
+		private void UpdateChapterView()
+        {
+            List<Chapter> TripChapters = ViewModel.CurrentDeclaration.Chapters.FindAll(i => i.ChapterIdentifier == ChapterIdentifiers.Trip);
+            TripChapters[0].Text = L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP) + " 1";
+
+            var grid = this.FindByName<Grid>("MainGrid");
+            ScrollView scrollView = (ScrollView)grid.Children[0];
+            StackLayout stackLayout = (StackLayout)scrollView.Content;
+
+            foreach (View btn in stackLayout.Children)
+            {
+                if (btn.ClassId == ChapterIdentifiers.Trip.ToString())
+                {
+                    ((Button)btn).Text = L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP) + " 1";
+                    break;
+                }
+            }
+            SetInformationForMenu();
+        }
+
+        private void OnCreateClicked(object sender, EventArgs e)
+        {
+            ViewModel.CurrentDeclaration.Chapters.Add(ViewModel.CurrentDeclaration.Chapters[0]);
+
+            var grid = this.FindByName<Grid>("MainGrid");
+            ScrollView scrollView = (ScrollView)grid.Children[0];
+            StackLayout stackLayout = (StackLayout)scrollView.Content;
+            foreach (View btn in stackLayout.Children)
+            {
+                if (btn.ClassId == ChapterIdentifiers.Trip.ToString())
+                {
+                    ((Button)btn).Text = L10n.GetQuestionIdentifierMappedString(QuestionIdenfiers.TRIP) + " 1";
+                    break;
+                }
+            }
+        }
+
+        private void CreateMenuLayout(List<Chapter> Chapters)
+        {
+            var stackLayout = new StackLayout()
+            {
+                Orientation = StackOrientation.Vertical,
+                VerticalOptions = LayoutOptions.FillAndExpand,
+                Spacing = 1,
+            };
+
+            var headerButton = new ImageButton()
+            {
+                // TextColor = (Color)Application.Current.Resources["Text_Color"],
+                WidthRequest = 80,
+                HeightRequest = 80,
+                BorderRadius = 0,
+                Orientation = XLabs.Enums.ImageOrientation.ImageCentered,
+                Source = ImageSource.FromFile(Utils.DEFAULT_PROFILE_PIC),
+                BackgroundColor = (Color)Application.Current.Resources["SmartFlow_Yellow"],
+                ClassId = "HeaderButton",
+                AutomationId = Utils.AUTOMATION_ID + "HeaderImage_Button",
+            };
+            stackLayout.Children.Add(headerButton);
+            foreach (var chapter in Chapters)
+            {
+                var button = new Button()
+                {
+                    ClassId = chapter.ChapterIdentifier.ToString(),
+                    Text = chapter.Text,
+                    TextColor = (Color)Application.Current.Resources["Text_Color"],
+                    WidthRequest = 80,
+                    HeightRequest = 80,
+                    BorderRadius = 0,
+                    BackgroundColor = (Color)Application.Current.Resources["TextView_Bg"],
+                    AutomationId = Utils.AUTOMATION_ID + chapter.ChapterIdentifier.ToString(),
+                };
+                button.Clicked += GetView;
+                if (chapter.ChapterIdentifier == ChapterIdentifiers.Particulars)
+                    button.BackgroundColor = (Color)Application.Current.Resources["SmartFlow_Blue"];
+                stackLayout.Children.Add(button);
+            }
+
+            for (var i = 0; i < 5; i++)
+            {
+                var button = new Button()
+                {
+                    TextColor = (Color)Application.Current.Resources["Text_Color"],
+                    AutomationId = Utils.AUTOMATION_ID + "Empty_" + i,
+                    WidthRequest = 80,
+                    HeightRequest = 80,
+                    BorderRadius = 0,
+                    BackgroundColor = (Color)Application.Current.Resources["TextView_Bg"],
+                };
+                stackLayout.Children.Add(button);
+            }
+
+            var grid = this.FindByName<Grid>("MainGrid");
+
+            var scrollView = new ScrollView()
+            {
+                Content = stackLayout,
+                ClassId = "MenuLayOut"
+            };
+            grid.Children.Add(scrollView);
+            Grid.SetColumn(scrollView, 0);
+        }
+
+        private ScrollView CreateDataLayout(Chapter chapter, bool IsReadOnly = false)
+        {
+
+            var stackLayout = new StackLayout()
+            {
+                Orientation = StackOrientation.Vertical,
+                VerticalOptions = LayoutOptions.FillAndExpand,
+                ClassId = chapter.ChapterIdentifier.ToString(),
+                Padding = new Thickness(20, 10, 20, 10),
+                IsEnabled = !IsReadOnly
+            };
+
+            //Create question list based on view model.
+            foreach (var question in chapter.Questions)
+            {
+                var label = new Label()
+                {
+                    ClassId = question.QuestionIdentifier.ToString() + "_label",
+                    Text = question.Text,
+                    VerticalTextAlignment = TextAlignment.Center,
+                    HorizontalOptions = LayoutOptions.StartAndExpand,
+                    Style = (Style)Application.Current.Resources["SmallFont"],
+                    AutomationId = Utils.AUTOMATION_ID + "label_" + question.QuestionIdentifier.ToString(),
+                };
+                stackLayout.Children.Add(label);
+
+                var validationLabel = new Label()
+                {
+                    TextColor = Color.Red,
+                    IsVisible = false,
+                    ClassId = question.QuestionIdentifier.ToString() + "_validationlabel",
+                    AutomationId = Utils.AUTOMATION_ID + "validationLabel_" + question.QuestionIdentifier.ToString(),
+                };
+                var type = question.Type;
+                switch (type)
+                {
+                    case QuestionType.Date:
+                        var datePicker = new DatePicker
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            Format = Utils.DATE_FORMAT,
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString(),
+                            //MinimumDate = question.Config.MinDate,
+                            //MaximumDate = question.Config.MaxDate,
+                        };
+                        if (question.Config != null)
+                        {
+                            if (question.Config.MaxDate != null)
+                            {
+                                datePicker.SetBinding(DatePicker.MaximumDateProperty, new Binding("MaxDate", BindingMode.OneWay, source: question.Config));
+                            }
+                            if (question.Config.MinDate != null)
+                            {
+                                datePicker.SetBinding(DatePicker.MinimumDateProperty, new Binding("MinDate", BindingMode.OneWay, source: question.Config));
+                            }
+                        }
+                        datePicker.SetBinding(DatePicker.DateProperty, new Binding("AnswerText", source: question, converter: new Converters.DateTimeConverter()));
+                        stackLayout.Children.Add(datePicker);
+                        break;
+                    case QuestionType.DropDown:
+
+                        var ddList = new List<string>();
+                        foreach (var s in question.Answers)
+                        {
+                            ddList.Add(s.Text);
+                        }
+                        var dd = new ExtendedPicker()
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString(),
+                            ItemsSource = ddList,
+                            SelectedIndex = -1
+                        };
+                        dd.SelectedIndex = question.SelectedAnswerIndex;
+                        //dd.SelectedItem = question.AnswerText;
+                        dd.SetBinding(ExtendedPicker.SelectedIndexProperty, new Binding("SelectedAnswerIndex", source: question));
+                        //dd.SetBinding(ExtendedPicker.SelectedItemProperty, new Binding("AnswerText", source: question));
+                        if (question.Config != null && question.Config.IsRequired)
+                        {
+                            dd.Behaviors.Add(new PickerValidationBehaviour());
+                        }
+                        stackLayout.Children.Add(validationLabel);
+                        stackLayout.Children.Add(dd);
+
+                        if (dd.SelectedIndex <= 0)
+                        {
+                            dd.IsVisible = question.IsVisible;
+                            label.IsVisible = question.IsVisible;
+                        }
+
+                        // Add select change listener for every drop down, so that we can hide the validation label if any, when user selects some text from 
+                        // drop down
+                        if (question.Answers != null && question.Answers.Count > 0)
+                            dd.SelectedIndexChanged += SelectedIndexChanged;
+                        break;
+                    default:
+                        var entry = new Entry()
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString()
+                        };
+                        entry.Keyboard = Keyboard.Default;
+                        try
+                        {
+                            entry.SetBinding(Entry.TextProperty, new Binding("AnswerText", source: question, converter: new TrimConverter()));
+                            entry.TextChanged += HandleTextChanged;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHandler.AddExceptionLog(TAG, "", ex, true);
+                        }
+                        if (question.Config != null)
+                        {
+                            if (question.Config.MaxLength != 0)
+                            {
+                                entry.Behaviors.Add(new LengthValidationBehaviour()
+                                {
+                                    MaxLength = question.Config.MaxLength,
+                                });
+                            }
+                            if (question.Config.IsRequired)
+                            {
+                                entry.Behaviors.Add(new EmptyValidationBehaviour());
+                            }
+                            if (question.Config.ValidateSpecialCharacters)
+                            {
+                                entry.Behaviors.Add(new CharacterValidationBehaviour());
+                            }
+                            if (question.Config.ValidateSpecialCharactersName)
+                            {
+                                entry.Behaviors.Add(new CharacterValidationBehaviour(true));
+                            }
+                            if (question.Config.AllowOnlyNumeric)
+                            {
+                                entry.Keyboard = Keyboard.Numeric;
+                                entry.Behaviors.Add(new NumericValidationBehavior());
+                            }
+                            if (question.Config.ValidateEmailAddress)
+                            {
+                                entry.Keyboard = Keyboard.Email;
+                                entry.Behaviors.Add(new EmailValidationBehavior());
+                            }
+                            if (question.Config.ValidateContactNumber)
+                            {
+                                entry.Keyboard = Keyboard.Telephone;
+                            }
+                        }
+
+                        //if (question.Config != null)
+                        //{
+                        stackLayout.Children.Add(validationLabel);
+                        //}
+                        if (entry.Text.Length <= 0)
+                        {
+                            entry.IsVisible = question.IsVisible;
+                            label.IsVisible = question.IsVisible;
+                        }
+                        stackLayout.Children.Add(entry);
+                        break;
+                }
+
+            }
+
+            var myView = new ScrollView()
+            {
+                ClassId = chapter.ChapterIdentifier.ToString(),
+                Content = stackLayout,
+            };
+
+            if (Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                foreach (var s in stackLayout.Children.Where(i => i is ExtendedPicker && i.IsVisible))
+                {
+                    ConditionalMapping(s);
+                }
+            }
+
+            return myView;
+        }
+
+        private void GetView(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+
+            if (Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                if (button.ClassId == ChapterIdentifiers.Particulars.ToString())
+                {
+                    TripSelectedId = -1;
+                }
+                else
+                {
+                    List<Chapter> TripChaptersList = ViewModel.CurrentDeclaration.Chapters.FindAll(i => i.ChapterIdentifier == ChapterIdentifiers.Trip);
+                    if (Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+                    {
+                        TripSelectedId = 0;
+                    }
+                    else
+                    {
+                        TripSelectedId = TripChaptersList[0].Id;
+                    }
+                }
+            }
+                
+            GetViewInFront(button.ClassId);
+        }
+
+        void GetViewInFront(string ChapterIdentifier)
+        {
+            StackLayout menuLayOut = null;
+            var grid = this.FindByName<Grid>("MainGrid");
+            foreach (var v in grid.Children)
+            {
+                if (v.ClassId == currentView)
+                {
+                    layouts[(ChapterIdentifiers)Enum.Parse(typeof(ChapterIdentifiers), v.ClassId)] = (ScrollView)v;
+                }
+                //Resetting button colors to default Color
+                if (v.ClassId == "MenuLayOut")
+                {
+                    var menuView = (ScrollView)v;
+                    menuLayOut = (StackLayout)menuView.Content;
+                    foreach (var child in menuLayOut.Children)
+                    {
+                        var btn = (Button)child;
+                        if (btn.ClassId == "HeaderButton")
+                        {
+                            btn.BackgroundColor = (Color)Application.Current.Resources["SmartFlow_Yellow"];
+                        }
+                        else if (btn.ClassId == ChapterIdentifier)
+                        {
+                            btn.BackgroundColor = (Color)Application.Current.Resources["SmartFlow_Blue"];
+                        }
+                        else
+                        {
+                            btn.BackgroundColor = (Color)Application.Current.Resources["TextView_Bg"];
+                        }
+                    }
+                }
+            }
+
+            grid.Children.RemoveAt(grid.Children.Count() - 1);
+            var dataLayout = layouts[(ChapterIdentifiers)Enum.Parse(typeof(ChapterIdentifiers), ChapterIdentifier)];
+            grid.Children.Add(dataLayout);
+            Grid.SetColumn(dataLayout, 1);
+            currentView = ChapterIdentifier;
+
+            if (Mode == EnumMaps.CREATE_DECLARATION_SELECTION_SCREEN)
+            {
+                // As of now we are not having Group handling. So disable button to add for Group View.
+                if (currentView == Enums.ChapterIdentifiers.Particulars.ToString())
+                {
+                    FooterViewId.SetButtonVisible(false);
+                }
+                else if (currentView == Enums.ChapterIdentifiers.Trip.ToString())
+                {
+                    FooterViewId.SetButtonVisible(true);
+                }
+            }
+            else if (Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                CreateNavBar();
+            }            
+        }
+
+        /// <summary>
+        /// Method to check if some text has been entered. We will remove validation label for that question
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void HandleTextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                var EntryView = (Entry)sender;
+
+                var grid = this.FindByName<Grid>("MainGrid");
+                var scrollView = (ScrollView)grid.Children[1];
+                var stackLayout = (StackLayout)scrollView.Content;
+
+                var chapter = ViewModel.CurrentDeclaration.Chapters.Find(i => i.ChapterIdentifier.ToString() == currentView);
+                var Question = chapter.Questions.Find(i => i.QuestionIdentifier.ToString() == EntryView.ClassId);
+
+                // If their is any change in the question selection index, then we should hide the validation label for this question as well.
+                var validationLabel = stackLayout.Children.First(k => k is Label && k.ClassId == Question.QuestionIdentifier.ToString() + "_validationlabel");
+                validationLabel.IsVisible = false;
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+        /// <summary>
+        /// When selection of conditional dropdown is changed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ConditionalMapping(sender);
+        }
+
+        /// <summary>
+        /// All Conditional questions are displayed based on this method
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        void ConditionalMapping(object sender)
+        {
+            try
+            {
+                var picker = (ExtendedPicker)sender;
+
+                var grid = this.FindByName<Grid>("MainGrid");
+                var scrollView = (ScrollView)grid.Children.FirstOrDefault(i => i.ClassId == currentView); ;
+                var stackLayout = (StackLayout)scrollView.Content;
+
+                var chapter = ViewModel.CurrentDeclaration.Chapters.Find(i => i.ChapterIdentifier.ToString() == currentView);
+                var Question = chapter.Questions.Find(i => i.QuestionIdentifier.ToString() == picker.ClassId);
+
+                try
+                {
+                    // If their is any change in the question selection index, then we should hide the validation label for this question as well.
+                    var validationLabel = stackLayout.Children.First(k => k is Label && k.ClassId == Question.QuestionIdentifier.ToString() + "_validationlabel");
+                    validationLabel.IsVisible = false;
+                }
+                catch (Exception e)
+                {
+                    LogHandler.AddExceptionLog(TAG, "", e, true);
+                }
+
+                // Logic below makes sure that for any change in drop down selection index, the questions which are dependent on the answers of this question, should 
+                // be traversed again and can be made visible/invisible based on the selected index.
+
+                if (Question != null && Question.Answers != null)
+                {
+                    var AnswerList = Question.Answers.FindAll(i => (i.ConditionalQuestion != null && i.ConditionalQuestion.Exists(j => j.ConditionQuestion != QuestionIdenfiers.PARTICULARS)));
+                    foreach (var answer in AnswerList)
+                    {
+                        answer.ConditionalQuestion.ForEach(j =>
+                        {
+                            var validationLabel = stackLayout.Children.First(k => k is Label && k.ClassId == (j.ConditionQuestion.ToString() + "_validationlabel"));
+                            var label = stackLayout.Children.First(k => k is Label && k.ClassId == (j.ConditionQuestion.ToString() + "_label"));
+                            var editView = stackLayout.Children.First(k => k.ClassId == j.ConditionQuestion.ToString());
+                            var conditionalQues = chapter.Questions.Find(n => n.QuestionIdentifier.ToString() == j.ConditionQuestion.ToString());
+
+                            if (answer.Text == picker.SelectedItem.ToString())
+                            {
+                                // maintain visibility of validation label what ever it is.
+                                label.IsVisible = true;
+                                editView.IsVisible = true;
+                            }
+                            else
+                            {
+                                validationLabel.IsVisible = false;
+                                label.IsVisible = false;
+                                editView.IsVisible = false;
+                                if (conditionalQues.Type == QuestionType.DropDown)
+                                    ((ExtendedPicker)editView).SelectedIndex = 0;
+                                else if (conditionalQues.Type == QuestionType.Text)
+                                    ((Entry)editView).Text = "";
+                            }
+                        });
+                    }
+                }
+                //}
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+        /// <summary>
+        /// This recursive to be used in case the delegate method fails at any scenario
+        /// </summary>
+        /// <param name="chapter">The chapter.</param>
+        /// <param name="question">The question.</param>
+        /// <param name="stackLayout">The stack layout.</param>
+        /// <param name="picker">The picker.</param>
+        /// <returns></returns>
+        bool ConditionalRecursive(Chapter chapter, Question question, StackLayout stackLayout, ExtendedPicker picker)
+        {
+            List<Answer> AnswerList = question.Answers.FindAll(i => (i.ConditionalQuestion != null && i.ConditionalQuestion.Exists(j => j.ConditionQuestion != QuestionIdenfiers.PARTICULARS)));
+
+            foreach (var answer in AnswerList)
+            {
+                View label = null;
+                View editView = null;
+                View validationLabel = null;
+                Question conditionalQues = null;
+                foreach (var j in answer.ConditionalQuestion)
+                {
+                    validationLabel = stackLayout.Children.First(k => k is Label && k.ClassId == (j.ConditionQuestion.ToString() + "_validationlabel"));
+                    label = stackLayout.Children.First(k => k is Label && k.ClassId == (j.ConditionQuestion.ToString() + "_label"));
+                    editView = stackLayout.Children.First(k => k.ClassId == j.ConditionQuestion.ToString());
+                    conditionalQues = chapter.Questions.Find(n => n.QuestionIdentifier.ToString() == j.ConditionQuestion.ToString());
+
+                    if (answer.Text == picker.SelectedItem.ToString())
+                    {
+                        // maintain visibility of validation label what ever it is.
+                        label.IsVisible = true;
+                        editView.IsVisible = true;
+                    }
+                    else
+                    {
+                        validationLabel.IsVisible = false;
+                        label.IsVisible = false;
+                        editView.IsVisible = false;
+                        if (conditionalQues.Type == QuestionType.DropDown)
+                            ((ExtendedPicker)editView).SelectedIndex = 0;
+                        else if (conditionalQues.Type == QuestionType.Text)
+                            ((Entry)editView).Text = "";
+
+                        return ConditionalRecursive(chapter, conditionalQues, stackLayout, picker);
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Validation checker method.
+        /// this method checks all the validation behaviours applied for different views added to the profile details page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        bool Validation<T>() where T : BindableObject
+        {
+            var isValid = true;
+            try
+            {
+                var grid = this.FindByName<Grid>("MainGrid");
+                var scrollView = (ScrollView)grid.Children[1];
+                var stackLayout = (StackLayout)scrollView.Content;
+                foreach (var i in stackLayout.Children)
+                {
+                    if (i is T && i.IsVisible)
+                    {
+                        foreach (var j in i.Behaviors)
+                        {
+                            var behaviour = j as BaseBehaviour<T>;
+                            var label = (Label)stackLayout.Children.First(k => k is Label && k.ClassId == (i.ClassId + "_validationlabel"));
+                            label.IsVisible = false;
+
+                            if (behaviour.IsValid) continue;
+                            else
+                            {
+                                label.IsVisible = true;
+                                isValid = false;
+                                label.Text = behaviour.ValidationMessage;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+
+            return isValid;
+        }
+
+        bool CheckValidation()
+        {
+            var IsEntryValidated = Validation<Entry>();
+            var IsPickerValidated = Validation<ExtendedPicker>();
+
+            return IsEntryValidated && IsPickerValidated;
+        }
+        
+        /// <summary>
+        /// In case user press back button, then we have to ask user if he wants to save the profile or not. if user clicks cancel, then we have to go back.
+        /// Similar thing will happen if user clicks Save, but for that if user clicks cancel, then view will remain on that screen.
+        /// </summary>
+        /// <param name="IsComingFromBack"></param>
+        async void SaveDeclaration(bool IsComingFromBack)
+        {
+            bool isDone = false;
+            if (Mode == Enums.EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == Enums.EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+            {
+                var answer = await DisplayAlert(Shared.Resources.AppResources.declaration_save_message, Shared.Resources.AppResources.ok_proceed,
+                Shared.Resources.AppResources.ok_text, Shared.Resources.AppResources.cancel_text);
+                isDone = answer;
+                if (answer)
+                {
+                    ViewModel.ModifyAnswers();
+                    if (Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN)
+                    {
+                        FooterViewId.IsVisible = false;
+                        await ViewModel.ExecuteUpdateCommand();
+                        FooterViewId.IsVisible = true;
+                    }
+                    else
+                    {
+                        FooterViewId.IsVisible = false;
+                        await ViewModel.ExecuteAddCommand();
+                        FooterViewId.IsVisible = true;
+                    }
+
+                    // If user is coming from back click, then we have to just display Success Save message.
+                    // Else user will be coming from Preview button and we have to change the mode and route user to preview view.
+                    if (IsComingFromBack)
+                    {
+                        Device.BeginInvokeOnMainThread(async () =>
+                        {
+                            await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.SuccessPage.ToString(), new InfoHolder(-1, Mode), false);
+                        });
+                    }
+                    else
+                    {
+                        Mode = EnumMaps.DECLARATION_PREVIEW_MODE;
+                        SetInformationForMenu();
+                    }
+                }
+                else
+                {
+                    await ViewModel.RefreshDBCommand();
+                    if (IsComingFromBack)
+                    {
+                        FooterViewId.BackBtnCommand.Execute(null);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Back button trigger event.
+        /// This button is available in footerView, but the callback handler is registered in this class.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        async void OnBackclicked(object sender, EventArgs e)
+        {
+            OnBackButtonPressed();
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            if (Mode == EnumMaps.CREATE_DECLARATION_SELECTION_SCREEN)
+            {
+                App.NavigationService.GoBack(false);
+            }
+            else if (Mode == EnumMaps.DECLARATION_PREVIEW_MODE)
+            {
+                App.NavigationService.GoBack(false);
+            }
+            else if(Mode == EnumMaps.CREATE_DECLARATION_SINGLE_PROFILE || Mode == EnumMaps.CREATE_DECLARATION_UPDATE_SCREEN )
+            {
+                SaveDeclaration(true);
+            }
+            return true;
+        }
+
+
+    }
+}

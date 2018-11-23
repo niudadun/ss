@@ -1,0 +1,399 @@
+﻿using SmartFlow.Shared.Helpers.Interfaces;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Respository;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ImageCircle.Forms.Plugin.Abstractions;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using SmartFlow.Shared.Converters;
+using SmartFlow.Shared.Helpers;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Profile Info View
+    /// When user clicks on any profile item in profile page, this view is generated
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class ProfileInfoDialogPage : ContentPage
+	{
+        private static string TAG = "ProfileInfoDialogPage";
+        private int profileIndex;
+        int selectedId = -1;
+
+        /// View model for selected profile
+        public ProfileViewModel ViewModel;
+        public List<Profile> Profiles;
+
+        Enums.EnumMaps Mode;
+        /// <summary>
+        /// Profile Info page constructor.
+        /// </summary>
+        public ProfileInfoDialogPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            FooterViewId.SetButtonHandling("").Clicked += OnViewClicked;
+            SetPageText();
+
+
+        }
+
+        /// <summary>
+        /// Profile Info page constructor with Profile id and State
+        /// </summary>
+        public ProfileInfoDialogPage(InfoHolder infoHolder)
+        {
+            InitializeComponent();
+
+            Mode = infoHolder.getwhichMode();
+            selectedId = infoHolder.getId();
+            Profiles = infoHolder.GetProfileList();
+            FooterViewId.SetButtonHandling("").Clicked += OnViewClicked;
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            //titleHeader.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST);
+            FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST_BTN_VIEW));
+            if (Mode == Enums.EnumMaps.PROFILE_LIST)
+            {
+                BtnGrid1.IsVisible = true;
+                BtnGrid2.IsVisible = false;
+                BtnUpdate.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.UPDATE_TEXT);
+                BtnDelete.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.DELETE_TEXT);
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION)
+            {
+                BtnGrid1.IsVisible = false;
+                BtnGrid2.IsVisible = true;
+                BtnAddPassenger.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.ADD_PASSENGER);
+            }
+        }
+
+        /// <summary>
+        /// Method to fill information of the selected profile
+        /// </summary>
+        void updateData()
+        {
+            if (ViewModel.CurrentProfile != null)
+            {
+                if (ViewModel.CurrentProfile.Image != null)
+                {
+                    var stream = new MemoryStream(ViewModel.CurrentProfile.Image);
+                    ProfileImage.Source = ImageSource.FromStream(() => stream);
+                }
+                else
+                {
+                    ProfileImage.Source = ImageSource.FromFile(Utils.DEFAULT_PROFILE_PIC);
+                }
+                ProfileName.Text = ViewModel.CurrentProfile.Name;
+            }
+        }
+        
+        /// <summary>
+        /// Update Profile Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnUpdateClicked(object sender, EventArgs e)
+        {
+            if (Navigation.ModalStack.Count == 0 || Navigation.ModalStack.Last().GetType() != typeof(ManageProfilePage))
+            {
+                App.NavigationService.GoBack(false);
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ManageProfilePage.ToString(), new InfoHolder(selectedId, Enums.EnumMaps.UPDATE_INFO), false);
+            }
+        }
+
+        /// <summary>
+        /// Delete profile Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        async void BtnDeleteClicked(object sender, EventArgs e)
+        {
+            var answer = await DisplayAlert(Shared.Resources.AppResources.delete_profile, Shared.Resources.AppResources.profile_permanent_delete,
+                Shared.Resources.AppResources.yes_text, Shared.Resources.AppResources.no_text);
+            if (answer)
+            {
+                ViewModel.DeleteCommand.Execute(null);
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.SuccessPage.ToString(), Enums.EnumMaps.DELETE_INFO, false);
+                });
+            }
+
+        }
+
+        /// <summary>
+        /// View Profile button clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnViewClicked(object sender, EventArgs e)
+        {
+            if (Mode == Enums.EnumMaps.PROFILE_LIST)
+            {
+                if (Navigation.ModalStack.Count == 0 || Navigation.ModalStack.Last().GetType() != typeof(ManageProfilePage))
+                {
+                    App.NavigationService.GoBack(false);
+                    App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ManageProfilePage.ToString(), new InfoHolder(selectedId, Enums.EnumMaps.VIEW_INFO), false);
+                }
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION)
+            {
+                if (Navigation.ModalStack.Count == 0 || Navigation.ModalStack.Last().GetType() != typeof(CreateDeclarationPage))
+                {
+                    App.NavigationService.GoBack(false);
+                    App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.CreateDeclarationPage.ToString(), new InfoHolder(selectedId, Enums.EnumMaps.CREATE_DECLARATION_SELECTION_SCREEN), false);
+                }
+            }
+
+        }
+        
+        /// <summary>
+        /// Method to get the profile data from the selected profile
+        /// </summary>
+        private void GetProfileData()
+        {
+            if (selectedId != -1)
+            {              
+                ViewModel = new ProfileViewModel(Navigation, selectedId);
+                BindingContext = ViewModel;
+                updateData();
+
+                //ViewModelNav.RefreshCommand.Execute(null);
+                FooterViewId.SetNavigationBarVisible(true);
+                profileIndex = Profiles.IndexOf(ViewModel.CurrentProfile);
+                if (profileIndex < 7)
+                {                    
+                    CreateNavBar();
+                }
+                else
+                {                    
+                    CreateSecondPageOfNavBar();
+                }
+
+            }            
+        }
+
+        /// <summary>
+        /// Overridden method called when page comes to foreground
+        /// </summary>
+        protected override void OnAppearing()
+        {
+            GetProfileData();
+        }
+
+
+        private void NavBackPage(object sender, EventArgs e)
+        {
+            CreateNavBar();
+        }
+
+        private void NavNextPage(object sender, EventArgs e)
+        {
+            CreateSecondPageOfNavBar();
+        }
+
+        /// <summary>
+        /// Create Second page of Navigation bar
+        /// </summary>
+        public void CreateSecondPageOfNavBar()
+        {
+            var profileList = Profiles;
+            for (var k = 1; k <= 8; k++)
+            {
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "+")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnCreateClicked;
+                }
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "<")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavBackPage;
+                }
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == ">")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavNextPage;
+                }
+                else
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnSelectionTest;
+                }
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).Text = "";
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).IsVisible = false;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).BackgroundColor = Color.Transparent;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).TextColor = Color.Black;
+            }
+
+            if (profileIndex >= 7)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileIndex - 6)).BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileIndex - 6)).TextColor = Color.White;
+            }
+
+            if (profileList.Count < 12)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Text = "+";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Clicked += OnCreateClicked;
+
+
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 5)).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 5)).Text = "<";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 5)).Clicked += NavBackPage;
+
+            }
+
+            if (profileList.Count >= 12)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Text = "<";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Clicked += NavBackPage;
+
+            }
+
+            for (int i = 1; i <= profileList.Count - 7; i++)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + i).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + i).Text = (i + 7).ToString();
+                FooterViewId.Content.FindByName<Button>("Nav_" + i).Clicked += OnSelectionTest;
+
+            }
+        }
+
+        /// <summary>
+        /// Create First page of Navigation bar
+        /// </summary>
+        public void CreateNavBar()
+        {
+            var profileList = Profiles;
+            for (var k = 1; k <= 8; k++)
+            {
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "+")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnCreateClicked;
+                }
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "<")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavBackPage;
+                }
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == ">")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavNextPage;
+                }
+                else
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnSelectionTest;
+                }
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).Text = "";
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).IsVisible = false;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).BackgroundColor = Color.Transparent;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).TextColor = Color.Black;
+            }
+
+            if (profileIndex < 7)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileIndex + 1)).BackgroundColor = Color.FromHex(Shared.Resources.AppResources.blue_color);
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileIndex + 1)).TextColor = Color.White;
+            }
+
+            if (profileList.Count < 8)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).Text = "+";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).Clicked += OnCreateClicked;
+
+                for (var j = 1; j <= profileList.Count; j++)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).IsVisible = true;
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).Text = j.ToString();
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).Clicked += OnSelectionTest;
+                }
+            }
+            // if (profileList.Count >= 8)
+            else
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_8").IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_8").Text = ">";
+                FooterViewId.Content.FindByName<Button>("Nav_8").Clicked += NavNextPage;
+
+                for (int i = 1; i < 8; i++)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + i).IsVisible = true;
+                    FooterViewId.Content.FindByName<Button>("Nav_" + i).Text = i.ToString();
+                    FooterViewId.Content.FindByName<Button>("Nav_" + i).Clicked += OnSelectionTest;
+                }
+            }
+        }
+
+        private void OnSelectionTest(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            int id = Int16.Parse(btn.Text);
+            var modellist = Profiles;
+            
+            selectedId = modellist[id - 1].Id;
+            GetProfileData();
+
+            //if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+            //{
+            //    App.NavigationService.GoBack(false);
+            //}
+            //App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Enums.EnumMaps.UPDATE_INFO, modellist), false);
+
+
+        }
+        /// <summary>
+        /// Create new profile, which navigate to a profile creation page.
+        /// When Create action button is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCreateClicked(object sender, EventArgs e)
+        {
+            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+            {
+                App.NavigationService.GoBack(false);
+            }
+            App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString(), false);
+        }
+
+        /// <summary>
+        /// Add Passenger Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnAddPassengerClicked(object sender, EventArgs e)
+        {
+            OnCreateClicked(sender, e);
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            App.NavigationService.GoBack(false);
+            return true;
+        }
+    }
+}

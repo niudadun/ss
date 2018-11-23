@@ -1,0 +1,198 @@
+﻿using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Resources;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// MainMenuPage Layout
+    /// View to display options : Create Profile, Create Declaration, Manage Declaration
+    /// </summary>
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class MainMenuPage : ContentPage
+    {
+        private static string TAG = "MainMenuPage";
+
+        /// <summary>
+        /// MainMenuPage constructor
+        /// </summary>
+        public MainMenuPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            //ServicesHeader.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_HEADER);
+            Profiles.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_PROFILE);
+            CreateDeclarationLabel.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_PAGE_BTN_CREATE_DEC);
+            ManageDeclarationLabel.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_DEC);
+
+            HeaderViewID.SetFirstHeader(true);
+        }
+
+        /// <summary>
+        /// Manage Profile Button Click Handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageProfile(object sender, EventArgs e)
+        {
+            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfilesList.ToString())
+                return;
+            App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfilesList.ToString(), new InfoHolder(-1, Enums.EnumMaps.PROFILE_LIST), false);
+            
+        }
+
+        /// <summary>
+        /// Create Declaration Button Click Handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateDeclaration(object sender, EventArgs e)
+        {
+            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfilesList.ToString())
+                return;
+            App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfilesList.ToString(), new InfoHolder(-1, Enums.EnumMaps.CREATE_DECLARATION), false);
+        }
+
+        /// <summary>
+        /// Manage Declaration Button Click Handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageDeclaration(object sender, EventArgs e)
+        {
+            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfilesList.ToString())
+                return;
+            App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfilesList.ToString(), new InfoHolder(-1, Enums.EnumMaps.MANAGE_DECLARATION), false);
+        }
+
+        /// <summary>
+        /// Manage Profile Button Pressed Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageProfilePressed(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_profile_white");
+        }
+
+        /// <summary>
+        /// Manage Profile Button Released Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageProfileReleased(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_profile_blue");
+        }
+
+        /// <summary>
+        /// Manage Profile Button Focused Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageProfileFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_profile_white");
+        }
+
+        /// <summary>
+        /// Create Declaration Button Pressed Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateDeclarationPressed(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_new_declaration_white");
+        }
+
+        /// <summary>
+        /// Create Declaration Button Released Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateDeclarationReleased(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_new_declaration_blue");
+        }
+
+        /// <summary>
+        /// Create Declaration Button Focused Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateDeclarationFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_new_declaration_white");
+        }
+
+        /// <summary>
+        /// Manage Declaration Button Pressed Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageDeclarationPressed(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_manage_delcaration_white");
+        }
+
+        /// <summary>
+        /// Manage Declaration Button Released Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageDeclarationReleased(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_manage_delcaration_blue");
+        }
+
+        /// <summary>
+        /// Manage Declaration Button Focused Method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ManageDeclarationFocused(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            btn.Image = (FileImageSource)ImageSource.FromFile("ic_manage_delcaration_white");
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            App.NavigationService.GoBack(false);
+            return true;
+        }
+    }
+}

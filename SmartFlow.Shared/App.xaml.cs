@@ -1,0 +1,347 @@
+﻿using SmartFlow.Shared.Data;
+using SmartFlow.Shared.DataTemplates;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Helpers.Interfaces;
+using SmartFlow.Shared.Models.Ede.Enums;
+using SmartFlow.Shared.Navigation;
+using SmartFlow.Shared.Resources;
+using SmartFlow.Shared.Respository;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.Views;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared
+{
+    /// <summary>
+    /// App Class
+    /// This is the entry point for shared project.
+    /// In this we declare global styles, colors, objects for navigation, repositories.
+    /// </summary>
+    public partial class App : Application
+    {
+        private static string TAG = "App";
+
+        /// Profile Repository Object
+        public static IProfilesRepository _profilesRepository { get; private set; }
+        /// Declaration Repository Object
+        public static IDeclarationsRepository _declarationsRepository { get; private set; }
+
+        // Boolean to check if DB is loaded or is in progress
+        public static bool loadingDB = false;
+        /// Navigation Service Object
+        public static INavigationService NavigationService { get; } = new ViewNavigationService();
+
+        /// <summary>
+        /// Page Padding based on platform.
+        /// in iOS, headerview was getting merged with status bar
+        /// </summary>
+        public static readonly Thickness PagePadding = GetPagePadding();
+
+        private static Thickness GetPagePadding()
+        {
+            double topPadding;
+
+            switch (Device.RuntimePlatform)
+            {
+                case Device.iOS:
+                    topPadding = 20;
+                    break;
+                default:
+                    topPadding = 0;
+                    break;
+            }
+
+            return new Thickness(0, topPadding, 0, 0);
+        }
+
+        /// <summary>
+        ///  App constructor
+        ///  This is the start of App
+        /// </summary>       
+        public App()
+        {
+            try
+            {
+                InitializeComponent();
+
+                // Setting up the font size to be used across app
+                SetupFontSize();
+
+                // Adding pages to the navigation service
+                NavigationService.Configure(Enums.PageEnumsForNavigation.MainPage.ToString(), typeof(MainPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), typeof(MainMenuPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.LanguagePage.ToString(), typeof(LanguagePage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.ProfilesList.ToString(), typeof(ProfilesList));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.ManageProfilePage.ToString(), typeof(ManageProfilePage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString(), typeof(ProfileCreateOptionsPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.SuccessPage.ToString(), typeof(SaveSuccess));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), typeof(ProfileInfoDialogPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.MainMenuPageTutorial.ToString(), typeof(MainMenuPageTutorial));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.CreateDeclarationPage.ToString(), typeof(CreateDeclarationPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.ManageDeclarationPage.ToString(), typeof(ManageDeclarationPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.LanguageSelectionDialogPage.ToString(), typeof(LanguageSelectionDialogPage));
+                NavigationService.Configure(Enums.PageEnumsForNavigation.QRPage.ToString(), typeof(QRPage));
+                // Setting the main page of the app
+                var mainPage = ((ViewNavigationService)NavigationService).SetRootPage(Enums.PageEnumsForNavigation.MainPage.ToString());               
+                MainPage = mainPage;
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+        /// <summary>
+        /// Database initialization, default language set up and all repository initialization.
+        /// </summary>
+        /// <returns></returns>
+        public void DBInitialization()
+        {
+            L10n.SetLanguage();
+            var databasePath = DependencyService.Get<IFileHelper>().GetLocalFilePath("smartFlow.db");
+            DatabaseContext dbContext = new DatabaseContext(databasePath);
+            _profilesRepository = new ProfilesRepository(dbContext);
+            _declarationsRepository = new DeclarationsRepository(dbContext);
+        }
+
+        /// <summary>
+        /// Font size set up.
+        /// </summary>
+        public void SetupFontSize()
+        {
+            var deviceWidth = Device.info.ScaledScreenSize.Width;
+            var deviceHeight = Device.info.ScaledScreenSize.Height;
+            double smallLabel = 14;
+            double labelfontsize = 20;
+            double mlabelfontsize = 25;
+            double btnfontsize = 17;
+            Double btnwidthreqeust = 80;
+            Double btnheightreqeust = 80;
+            int BorderRadius = 40;
+            if (deviceWidth < 350)
+            {
+                labelfontsize = 14;
+                btnfontsize = 14;
+                mlabelfontsize = 18;
+            }
+            if (deviceWidth > 390)
+            {
+                btnwidthreqeust = 100;
+                btnheightreqeust = 100;
+                BorderRadius = 50;
+            }
+            var SmallLabelStyle = new Style(typeof(Label))
+            {
+                Setters = {
+                        new Setter { Property = Label.FontSizeProperty,  Value = smallLabel },
+                     }
+            };
+            var LabelStyle = new Style(typeof(Label))
+            {
+                Setters = {
+                        new Setter { Property = Label.FontSizeProperty,  Value = labelfontsize },
+                        new Setter {Property = Label.FontFamilyProperty, Value = "Roboto-Regular"}
+                }
+            };
+            var MedLabelStyle = new Style(typeof(Label))
+            {
+                Setters = {
+                        new Setter { Property = Label.FontSizeProperty,  Value = mlabelfontsize }
+                     }
+            };
+
+            // This button style is for Circular Buttons with some radius value. 
+            var CircularButtonStyle = new Style(typeof(Button))
+            {
+                Setters = {
+                         new Setter { Property = Button.WidthRequestProperty,  Value = btnwidthreqeust },
+                         new Setter { Property = Button.HeightRequestProperty,  Value = btnheightreqeust },
+                         new Setter { Property = Button.BorderRadiusProperty,  Value = BorderRadius },
+                         new Setter { Property = Button.BackgroundColorProperty,  Value = Shared.Resources.AppResources.yellow_color },
+                         new Setter { Property = Button.FontSizeProperty,  Value = btnfontsize },
+                         new Setter { Property = Button.TextColorProperty,  Value = Color.Black },
+                         new Setter {Property = Button.FontFamilyProperty, Value = "Roboto-Regular"}
+                     }
+
+            };
+
+            // Button Style for Footer Buttons. Since we are handling click/press/release in the respective file, hence we don't attach any delegate method here.
+            var ButtonStyleFooter = new Style(typeof(Button))
+            {
+                Setters = {
+                         new Setter { Property = Button.WidthRequestProperty,  Value = btnwidthreqeust },
+                         new Setter { Property = Button.HeightRequestProperty,  Value = btnheightreqeust },
+                         new Setter { Property = Button.BorderRadiusProperty,  Value = 0 },
+                         new Setter { Property = Button.BackgroundColorProperty,  Value = Shared.Resources.AppResources.yellow_color },
+                         new Setter { Property = Button.FontSizeProperty,  Value = btnfontsize },
+                         new Setter { Property = Button.TextColorProperty,  Value = Color.Black },
+                         new Setter {Property = Button.FontFamilyProperty, Value = "Roboto-Regular"}
+                     }
+
+            };
+
+            // Button Style for Dialog Buttons. This is same as Footer button style, but we are defining delegates along with style.
+            // Hence need to create a separate style.
+            var ButtonStyleDialog = new Style(typeof(Button))
+            {
+                Setters = {
+                         new Setter { Property = Button.WidthRequestProperty,  Value = btnwidthreqeust },
+                         new Setter { Property = Button.HeightRequestProperty,  Value = btnheightreqeust },
+                         new Setter { Property = Button.BorderRadiusProperty,  Value = 0 },
+                         new Setter { Property = Button.BackgroundColorProperty,  Value = Shared.Resources.AppResources.yellow_color },
+                         new Setter { Property = Button.FontSizeProperty,  Value = btnfontsize },
+                         new Setter { Property = Button.TextColorProperty,  Value = Color.Black },
+                         new Setter {Property = Button.FontFamilyProperty, Value = "Roboto-Regular"}
+                     }
+
+            };
+            var presstriggeractions = new ButtonPressedTriggerAction();
+            var pressTrigger = new EventTrigger()
+            {
+                Event = "Pressed"
+            };
+            pressTrigger.Actions.Add(presstriggeractions);
+
+            var releasetriggeractions = new ButtonReleasedTriggerAction();
+            var releaseTrigger = new EventTrigger()
+            {
+                Event = "Released"
+            };
+            releaseTrigger.Actions.Add(releasetriggeractions);
+
+            var clickedtriggeractions = new ButtonClickedTriggerAction();
+            var clickTrigger = new EventTrigger()
+            {
+                Event = "Clicked"
+            };
+            clickTrigger.Actions.Add(clickedtriggeractions);
+
+            var focusedtriggeractions = new ButtonFocusedTriggerAction();
+            var focusTrigger = new EventTrigger()
+            {
+                Event = "IsFocused"
+            };
+
+
+            CircularButtonStyle.Triggers.Add(pressTrigger);
+            CircularButtonStyle.Triggers.Add(releaseTrigger);
+            CircularButtonStyle.Triggers.Add(focusTrigger);
+
+            ButtonStyleDialog.Triggers.Add(pressTrigger);
+            ButtonStyleDialog.Triggers.Add(releaseTrigger);
+            ButtonStyleDialog.Triggers.Add(focusTrigger);
+            // ButtonStyle.Triggers.Add(clickTrigger);
+            Application.Current.Resources.Add("StandardFont", LabelStyle);
+            Application.Current.Resources.Add("LanguageBtn", CircularButtonStyle);
+            Application.Current.Resources.Add("FooterBtn", ButtonStyleFooter);
+            Application.Current.Resources.Add("DialogButton", ButtonStyleDialog);
+            Application.Current.Resources.Add("MsizeFont", MedLabelStyle);
+            Application.Current.Resources.Add("SmallFont", SmallLabelStyle);
+        }
+
+        /// <summary>
+        /// Handle when launch app.
+        /// </summary>
+        protected override async void OnStart()
+        {
+            ThreadPool.QueueUserWorkItem(o => DBInitialization());
+        }
+
+        /// <summary>
+        /// Handle when your app sleeps
+        /// </summary>
+        protected override void OnSleep()
+        {
+
+        }
+
+        /// <summary>
+        /// Handle when your app resumes
+        /// </summary>
+        protected override void OnResume()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// Button pressed control
+    /// </summary>
+    public class ButtonPressedTriggerAction : TriggerAction<Button>
+    {
+        /// <summary>
+        /// Method to be invoked when button is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        protected override void Invoke(Button sender)
+        {
+            sender.BackgroundColor = Color.FromHex(Resources.AppResources.blue_color);
+            sender.TextColor = Color.White;
+        }
+
+    }
+
+    /// <summary>
+    /// Button release event trigger
+    /// </summary>
+    public class ButtonReleasedTriggerAction : TriggerAction<Button>
+    {
+        /// <summary>
+        /// Method to be invoked when button is Released
+        /// </summary>
+        /// <param name="sender"></param>
+        protected override void Invoke(Button sender)
+        {
+            sender.BackgroundColor = Color.FromHex(Resources.AppResources.yellow_color);
+            sender.TextColor = Color.Black;
+        }
+
+    }
+
+    /// <summary>
+    /// Button touched event trigger
+    /// </summary>
+    public class ButtonClickedTriggerAction : TriggerAction<Button>
+    {
+        /// <summary>
+        /// Method to be invoked when button is Clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        protected override void Invoke(Button sender)
+        {
+            sender.BackgroundColor = Color.FromHex(Resources.AppResources.blue_color);
+            sender.TextColor = Color.White;
+        }
+
+    }
+
+    /// <summary>
+    /// Button focused event trigger.
+    /// </summary>
+    public class ButtonFocusedTriggerAction : TriggerAction<Button>
+    {
+        /// <summary>
+        /// Method to be invoked when button is focused
+        /// </summary>
+        /// <param name="sender"></param>
+        protected override void Invoke(Button sender)
+        {
+            if (sender.IsFocused)
+            {
+                sender.BackgroundColor = Color.FromHex(Resources.AppResources.blue_color);
+                sender.TextColor = Color.White;
+            }
+            else
+            {
+                sender.BackgroundColor = Color.FromHex(Resources.AppResources.yellow_color);
+                sender.TextColor = Color.Black;
+            }
+        }
+    }
+}

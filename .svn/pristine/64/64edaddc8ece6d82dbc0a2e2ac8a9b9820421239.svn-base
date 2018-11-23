@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SmartFlow.Shared.Helpers
+{
+    /// <summary>
+    /// Utils class - Contains all constant values
+    /// </summary>
+    class Utils
+    {
+        /// Common Date Format
+        public static string CLIENT_DATE_FORMAT = "dd MM yyyy HH:mm";
+        public static string DATE_FORMAT = "dd/MM/yyyy";
+
+        public static string AUTOMATION_ID = "AutomationId_";
+
+        public static string DEFAULT_PROFILE_PIC = "ic_profile_pic";
+        public static int MAXIMUM_TRIPS_ALLOWED_ONE_TIME = 1;
+
+        /*
+         * Keys for preferences
+         */
+        /// Language Selection Key
+        public static string PREFS_KEY_LANGUAGE_SELECTION = "SelectedLanguage";
+		// App first launch preference key
+        public static string PREFS_KEY_IS_APP_FIRST_LAUNCH = "IsAppFirstLaunch";
+
+
+        public static string RandomString(int length)
+        {
+           return Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, length);
+        }
+        
+    }
+}

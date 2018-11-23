@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFlow.Shared.Views.HeaderView"
+              xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared">
+    <ContentView.Content>
+        <Grid BackgroundColor="{StaticResource SmartFlow_Header_Color}" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Padding="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30*" />
+                <ColumnDefinition Width="70*" />
+            </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" Source="ica_logo" Margin="3" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            <StackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center" HorizontalOptions="StartAndExpand">
+                <Label Grid.Column="1" x:Name="header_line1" FontSize="Small" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="Center"/>
+                <Label Grid.Column="1" x:Name="header_line2" FontSize="Small" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="Center"/>
+            </StackLayout>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

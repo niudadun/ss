@@ -1,0 +1,261 @@
+﻿using SmartFlow.Shared.DataTemplates;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.Views;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared.ViewModels
+{
+    /// <summary>
+    /// Class for handling Profile model and functions to handle database calls.
+    /// </summary>
+    public class ProfileViewModel : INotifyPropertyChanged
+    {
+        private static string TAG = "ProfileViewModel";
+
+        private readonly IProfilesRepository _profilesRepository;
+        private IEnumerable<Profile> _profiles;
+        private readonly INavigation _navigate;
+        private bool _isLoading;
+        private bool _isnotLoading;
+
+        /// <summary>
+        /// Current/Selected profile model
+        /// </summary>
+        public Profile CurrentProfile { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsNotLoading {
+            get { return !_isLoading; }
+            private set
+            {
+                if (_isnotLoading != value)
+                {
+                    _isnotLoading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Control button enabled or not.
+        /// </summary>
+        public bool IsLoading
+        {
+            get { return _isLoading; }
+
+            private set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Profile view model construction.
+        /// </summary>
+        /// <param name="navigate"></param>
+        public ProfileViewModel(INavigation navigate)
+        {
+            _navigate = navigate;
+            _isLoading = IsLoading;
+            _isnotLoading = IsNotLoading;
+            _profilesRepository = App._profilesRepository;
+            CurrentProfile = ProfileTemplate.CreateProfile();
+        }
+
+        /// <summary>
+        /// Profile view model with ID
+        /// </summary>
+        /// <param name="navigate">navigation service</param>
+        /// <param name="Id">selected profile id</param>
+        public ProfileViewModel(INavigation navigate, int Id)
+        {
+            _navigate = navigate;
+            _isLoading = IsLoading;
+            _isnotLoading = IsNotLoading;
+            _profilesRepository = App._profilesRepository;
+            CurrentProfile = _profilesRepository.GetProfileByIdAsync(Id).Result;
+        }
+
+        /// <summary>
+        /// Load Answer from profile template.
+        /// </summary>
+        public void LoadAnswers()
+        {
+            var template = ProfileTemplate.CreateProfile();
+            foreach (var ques in CurrentProfile.Chapters[0].Questions)
+            {
+                foreach (var question in template.Chapters[0].Questions)
+                {
+                    if (question.QuestionIdentifier == ques.QuestionIdentifier)
+                    {
+                        ques.Answers = question.Answers;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get profiles from database.
+        /// </summary>
+        /// <returns>All profiles as a list in database</returns>
+        public List<Profile> GetProfiles()
+        {
+           var profiles =  _profilesRepository.GetProfilesAsync().Result.ToList();
+           return profiles;
+        }
+
+        /// <summary>
+        /// Profiles list
+        /// </summary>
+        public IEnumerable<Profile> Profiles
+        {
+            get
+            {
+                if (_profiles != null)
+                {
+                    return _profiles.OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase);
+                }
+                else
+                {
+                    return _profiles;
+                }
+            }
+            set
+            {
+                _profiles = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Get prfile Cammand
+        /// </summary>
+        public ICommand RefreshCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    Profiles = await _profilesRepository.GetProfilesAsync();
+                });
+            }
+        }       
+
+        /// <summary>
+        /// Add new profile command
+        /// </summary>
+        public ICommand AddCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    IsLoading = true;
+                    IsNotLoading = false;
+                    UpdateProfileName();
+                    ModifyAnswers();
+                    await _profilesRepository.AddProfileAsync(CurrentProfile);
+                    IsLoading = false;
+                    IsNotLoading = true;
+                });
+            }
+            set { }
+        }
+
+        /// <summary>
+        /// Update exist profile command
+        /// </summary>
+        public ICommand UpdateCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    IsLoading = true;
+                    IsNotLoading = false;
+                    UpdateProfileName();
+                    ModifyAnswers();
+                    await _profilesRepository.UpdateProfileAsync(CurrentProfile);
+                    IsLoading = false;
+                    IsNotLoading = true;
+                });
+            }
+            set { }
+        }
+
+        /// <summary>
+        /// Delete profile command.
+        /// </summary>
+        public ICommand DeleteCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    IsLoading = true;
+                    IsNotLoading = false;
+                    await _profilesRepository.RemoveProfileAsync(CurrentProfile.Id);
+                    IsLoading = false;
+                    IsNotLoading = true;
+                });
+            }
+            set { }
+        }
+
+        /// <summary>
+        /// Update profile Name
+        /// </summary>
+        private void UpdateProfileName()
+        {
+            CurrentProfile.Chapters[0].Questions.ForEach(i =>
+            {
+                if (i.QuestionIdentifier == Enums.QuestionIdenfiers.FULLNAME)
+                    CurrentProfile.Name = i.AnswerText;
+            });
+        }
+
+        private void ModifyAnswers()
+        {
+
+            CurrentProfile.Chapters[0].Questions.ForEach(i =>
+                        {
+                            if (i.Type == QuestionType.DropDown && i.Answers.Any())
+                            {
+                                i.AnswerText = i.Answers[i.SelectedAnswerIndex].Text;
+                                i.AnswerCode = i.Answers[i.SelectedAnswerIndex].Code;
+                            }
+                            i.Answers = null;
+                        });
+
+        }
+
+        /// <summary>
+        /// Method called when any property is changed for the profile list
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Callback for any property change
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}

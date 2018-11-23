@@ -1,0 +1,575 @@
+﻿using SmartFlow.Shared.Helpers.Interfaces;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Respository;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ImageCircle.Forms.Plugin.Abstractions;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using SmartFlow.Shared.Converters;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Profile List Page
+    /// This page will display all the profiles from database in listview
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class ProfilesList : ContentPage
+	{
+        private static string TAG = "ProfilesList";
+
+        /// <summary>
+        /// Profile View model for handling db profile list
+        /// </summary>
+        public ProfileViewModel ViewModelNav;
+        Enums.EnumMaps Mode;
+        /// <summary>
+        /// Profile List Page constructor
+        /// </summary>
+        /// 
+        public ProfilesList()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            ProfileList.ItemSelected += OnSelection;
+            
+            FooterViewId.SetButtonHandling("").Clicked += OnCreateClicked;
+        }
+
+        /// <summary>
+        /// Profile List Page constructor with Profile id and Mode
+        /// </summary>
+        public ProfilesList(InfoHolder infoHolder)
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            Mode = infoHolder.getwhichMode();
+            ProfileList.ItemSelected += OnSelection;
+            FooterViewId.SetButtonHandling("").Clicked += OnCreateClicked;            
+        }
+
+        /// <summary>
+        /// Method to set the text/properties for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            if (Mode == Enums.EnumMaps.PROFILE_LIST)
+            {
+                InfoPageId.SetLabelInfo("ic_exclamation_blue", Helpers.L10n.GetMappedString(Enums.TextMapping.NO_PROFILES));
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST_BTN_CREATE));
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION)
+            {
+                InfoPageId.SetLabelInfo("ic_exclamation_blue", Helpers.L10n.GetMappedString(Enums.TextMapping.NO_PROFILES));
+                if (ViewModelNav.Profiles.ToList().Count > 0)
+                {
+                    FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST_BTN_VIEW));
+                }
+                else
+                {
+                    FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST_BTN_CREATE));
+                }
+            }
+            else if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+            {
+                InfoPageId.SetLabelInfo("ic_exclamation_blue", Helpers.L10n.GetMappedString(Enums.TextMapping.NO_PROFILES_FOUND));
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST_BTN_VIEW));
+            }
+        }
+
+        /// <summary>
+        /// List selecting event. 
+        /// When user selects any item from listview, this event is fired.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnSelection(object sender, SelectedItemChangedEventArgs e)
+        {
+            var myList = (ListView)sender;
+            if (e.SelectedItem == null)
+            {              
+                return; 
+            }
+           
+            var profile = (Profile)e.SelectedItem;
+            App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(profile.Id,Mode, ViewModelNav.Profiles.ToList()), false);
+            myList.SelectedItem = null;
+
+        }
+
+        /// <summary>
+        /// Click event on navigation bar
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnSelectionForNavBar(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            int id = Int16.Parse(btn.Text);
+            var modellist = ViewModelNav.Profiles.ToList();
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+                    {
+                        await App.NavigationService.GoBack(false);
+                    }
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Mode, modellist), false);
+                });
+            }
+            else
+            {
+                if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+                {
+                    App.NavigationService.GoBack(false);
+                }
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Mode, modellist), false);
+            }
+
+
+        }
+        /// <summary>
+        /// Create new profile, which navigate to a profile creation page.
+        /// When Create action button is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCreateClicked(object sender, EventArgs e)
+        {
+            if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+            {
+                if (ViewModelNav.Profiles != null && ViewModelNav.Profiles.ToList().Count > 0)
+                {
+                    int id = Int16.Parse("1");
+                    var modellist = ViewModelNav.Profiles.ToList();
+                    if (Device.RuntimePlatform == Device.iOS)
+                    {
+                        Device.BeginInvokeOnMainThread(async () =>
+                        {
+                            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+                            {
+                                await App.NavigationService.GoBack(false);
+                            }
+                            await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Mode, modellist), false);
+                        });
+                    }
+                    else
+                    {
+                        if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+                        {
+                            App.NavigationService.GoBack(false);
+                        }
+                        App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Mode, modellist), false);
+                    }
+                }
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_DECLARATION)
+            {
+                if (ViewModelNav.Profiles != null && ViewModelNav.Profiles.ToList().Count > 0)
+                {
+                    int id = Int16.Parse("1");
+                    var modellist = ViewModelNav.Profiles.ToList();
+                    if (Device.RuntimePlatform == Device.iOS)
+                    {
+                        Device.BeginInvokeOnMainThread(async () =>
+                        {
+                            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+                            {
+                                await App.NavigationService.GoBack(false);
+                            }
+                            await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Mode, modellist), false);
+                        });
+                    }
+                    else
+                    {
+                        if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString())
+                        {
+                            App.NavigationService.GoBack(false);
+                        }
+                        App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileInfoDialogPage.ToString(), new InfoHolder(modellist[id - 1].Id, Mode, modellist), false);
+                    }
+                }
+                else
+                {
+                    if (Device.RuntimePlatform == Device.iOS)
+                    {
+                        Device.BeginInvokeOnMainThread(async () =>
+                        {
+                            if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString())
+                            {
+                                await App.NavigationService.GoBack(false);
+                            }
+                            await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString(), new InfoHolder(-1, Enums.EnumMaps.CREATE_PROFILE), false);
+                        });
+                    }
+                    else
+                    {
+                        if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString())
+                        {
+                            App.NavigationService.GoBack(false);
+                        }
+                        App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString(), new InfoHolder(-1, Enums.EnumMaps.CREATE_PROFILE), false);
+                    }
+                }
+            }
+            else
+            {
+                if (Device.RuntimePlatform == Device.iOS)
+                {
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString())
+                        {
+                           await App.NavigationService.GoBack(false);
+                        }
+                        await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString(), new InfoHolder(-1, Enums.EnumMaps.CREATE_PROFILE), false);
+                    });
+                }
+                else
+                {
+                    if (App.NavigationService.CurrentPageKey == Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString())
+                    {
+                        App.NavigationService.GoBack(false);
+                    }
+                    App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.ProfileCreateOptionsPage.ToString(), new InfoHolder(-1, Enums.EnumMaps.CREATE_PROFILE), false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            App.NavigationService.GoBack(false);
+            return true;
+        }
+
+        private void NavBackPage(object sender, EventArgs e)
+        {
+            CreateNavBar();
+        }
+
+        private void NavNextPage(object sender, EventArgs e)
+        {
+            CreateSecondNavBar();
+        }
+
+        /// <summary>
+        /// Create second page of navigation bar.
+        /// </summary>
+        public void CreateSecondNavBar()
+        {
+            var profileList = ViewModelNav.Profiles.ToList();
+            ResetNavigationBar();
+
+            if (profileList.Count < 12)
+            {
+                if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).IsVisible = false;
+                }
+                else
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).IsVisible = true;
+                }
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Text = "+";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Clicked += OnCreateClicked;
+
+
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 5)).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 5)).Text = "<";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 5)).Clicked += NavBackPage;
+
+            }
+
+            if (profileList.Count >= 12)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Text = "<";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count - 6)).Clicked += NavBackPage;
+
+            }
+
+            for (int i = 1; i <= profileList.Count - 7; i++)
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_" + i).IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_" + i).Text = (i + 7).ToString();
+                FooterViewId.Content.FindByName<Button>("Nav_" + i).Clicked += OnSelectionForNavBar;
+
+            }
+        }
+
+        /// <summary>
+        /// Create first page of navigation bar.
+        /// </summary>
+        public void CreateNavBar()
+        {
+            var profileList = ViewModelNav.Profiles.ToList();
+            ResetNavigationBar();
+            if (profileList.Count < 8)
+            {
+                if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).IsVisible = false;
+                }
+                else
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).IsVisible = true;
+                }
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).Text = "+";
+                FooterViewId.Content.FindByName<Button>("Nav_" + (profileList.Count + 1)).Clicked += OnCreateClicked;
+
+                for (var j = 1; j <= profileList.Count; j++)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).IsVisible = true;
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).Text = j.ToString();
+                    FooterViewId.Content.FindByName<Button>("Nav_" + j).Clicked += OnSelectionForNavBar;
+                }
+            }
+            else
+            {
+                FooterViewId.Content.FindByName<Button>("Nav_8").IsVisible = true;
+                FooterViewId.Content.FindByName<Button>("Nav_8").Text = ">";
+                FooterViewId.Content.FindByName<Button>("Nav_8").Clicked += NavNextPage;
+
+                for (int i = 1; i < 8; i++)
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + i).IsVisible = true;
+                    FooterViewId.Content.FindByName<Button>("Nav_" + i).Text = i.ToString();
+                    FooterViewId.Content.FindByName<Button>("Nav_" + i).Clicked += OnSelectionForNavBar;
+                }
+            }
+        }
+
+        void ResetNavigationBar()
+        {
+            for (var k = 1; k <= 8; k++)
+            {
+                if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "+")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnCreateClicked;
+                }
+                else if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == "<")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavBackPage;
+                }
+                else if (FooterViewId.Content.FindByName<Button>("Nav_" + k).Text == ">")
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= NavNextPage;
+                }
+                else
+                {
+                    FooterViewId.Content.FindByName<Button>("Nav_" + k).Clicked -= OnSelectionForNavBar;
+                }
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).Text = "";
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).IsVisible = false;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).BackgroundColor = Color.Transparent;
+                FooterViewId.Content.FindByName<Button>("Nav_" + k).TextColor = Color.Black;
+            }
+        }
+
+        /// <summary>
+        /// Load list view based on data from database.
+        /// </summary>
+        private void LoadListView()
+        {
+            var viewModel = new ProfileViewModel(Navigation);
+            BindingContext = viewModel;
+            
+
+            viewModel.RefreshCommand.Execute(null);
+            ViewModelNav = viewModel;
+
+            SetPageText();
+            //if no profile data in database, it will display "No profile" message.
+            if (viewModel.Profiles == null || viewModel.Profiles.ToList().Count == 0)
+            {
+                InfoPageId.IsVisible = true;
+                ProfileList.IsVisible = false;
+                ResetNavigationBar();
+
+                if (Mode == Enums.EnumMaps.MANAGE_DECLARATION)
+                {
+                    FooterViewId.SetButtonVisible(false);
+                }
+                else
+                {
+                    FooterViewId.SetButtonVisible(true);
+                }
+            }
+            //if there are profiles in database, it will display the profile list.
+            else
+            {
+                FooterViewId.SetNavigationBarVisible(true);
+                CreateNavBar();
+
+                ProfileList.IsVisible = true;
+                InfoPageId.IsVisible = false;
+                ProfileList.ItemTemplate = new DataTemplate(typeof(ProfileListItemView));
+                var profileList = viewModel.Profiles.ToList();
+                foreach (Profile pr in viewModel.Profiles)
+                {
+                    pr.Index = profileList.IndexOf(pr) + 1;
+                }
+                ProfileList.ItemsSource = viewModel.Profiles;
+                //MaincontentStack.Children[0] = ProfileList;
+
+            }
+        }
+
+        /// <summary>
+        /// Overridden method called when page comes to foreground
+        /// </summary>
+        protected override void OnAppearing()
+        {
+            LoadListView();
+        }
+    }
+
+    /// <summary>
+    /// InfoHolder class
+    /// This class contains the state and profile id of the selected profile.
+    /// It is used when Details page/Success page is called with a particular details page state.
+    /// So rather than passing two separate params, we use this class to pass data
+    /// </summary>
+    public class InfoHolder
+    {
+        int id;
+        string languageId;
+
+        /// <summary>
+        /// Declaration id which is passed from activity to sub activity
+        /// </summary>
+        public int DeclarationId { get; set; }
+        Enums.EnumMaps whichMode;
+        List<Profile> ProfileList;
+
+        /// <summary>
+        /// Profile name passed from activity to sub activity
+        /// </summary>
+        public string profileName { get; set; }
+
+        /// <summary>
+        /// Declaration date passed from activity to sub activity
+        /// </summary>
+        public string date { get; set; }
+
+        /// <summary>
+        /// DeNo passed from activity to sub activity
+        /// </summary>
+        public string deNo { get; set; }
+
+        /// <summary>
+        /// TripID passed from activity to sub activity
+        /// </summary>
+        public string tripID { get; set; }
+
+        /// <summary>
+        ///  InfoHolder parametrized Constructor
+        /// </summary>
+        /// <param name="profileId"></param>
+        /// <param name="whichInfo"></param>
+        /// <param name="pList"></param>
+        public InfoHolder(int profileId, Enums.EnumMaps whichInfo, List<Profile> pList)
+        {
+            id = profileId;
+            whichMode = whichInfo;
+            ProfileList = pList;
+        }
+
+        /// <summary>
+        ///  InfoHolder parametrized Constructor
+        /// </summary>
+        /// <param name="profileId"></param>
+        /// <param name="whichInfo"></param>
+        /// <param name="declarationId"></param>
+        public InfoHolder(int profileId, Enums.EnumMaps whichInfo, int declarationId = 0)
+        {
+            id = profileId;
+            whichMode = whichInfo;
+            DeclarationId = declarationId;
+        }
+
+        /// <summary>
+        ///  InfoHolder parametrized Constructor
+        /// </summary>
+        /// <param name="languageID"></param>
+        /// <param name="whichInfo"></param>
+        public InfoHolder(string languageID, Enums.EnumMaps whichInfo)
+        {
+            languageId = languageID;
+            whichMode = whichInfo;
+        }
+
+        /// <summary>
+        /// InfoHolder parametrized Constructor
+        /// </summary>
+        /// <param name="profileId"></param>
+        /// <param name="whichInfo"></param>
+        /// <param name="name"></param>
+        /// <param name="dateInfo"></param>
+        /// <param name="deNoInfo"></param>
+        /// <param name="tripIDInfo"></param>
+        public InfoHolder(int profileId, Enums.EnumMaps whichInfo, string name, string dateInfo, string deNoInfo, string tripIDInfo)
+        {
+            id = profileId;
+            whichMode = whichInfo;
+            profileName = name;
+            date = dateInfo;
+            deNo = deNoInfo;
+            tripID = tripIDInfo;
+        }
+
+        /// <summary>
+        /// Get profile id
+        /// </summary>
+        /// <returns></returns>
+        public int getId()
+        {
+            return id;
+        }
+
+        /// <summary>
+        /// Get State of details page
+        /// </summary>
+        /// <returns></returns>
+        public Enums.EnumMaps getwhichMode()
+        {
+            return whichMode;
+        }
+
+        /// <summary>
+        /// Get profile list
+        /// </summary>
+        /// <returns></returns>
+        public List<Profile> GetProfileList()
+        {
+            return ProfileList;
+        }
+        /// <summary>
+        /// Get language code which is passed from activity to sub activity
+        /// </summary>
+        /// <returns></returns>
+        public string GetLanguageCode()
+        {
+            return languageId;
+        }
+    }
+}

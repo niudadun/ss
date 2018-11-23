@@ -1,0 +1,63 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SmartFlow.Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SmartFlow.Shared.Respository.Interfaces
+{
+    /// <summary>
+    /// Interface for profile database related functions
+    /// </summary>
+    public interface IProfilesRepository
+    {
+        /// <summary>
+        /// Method to get all the profiles available in database.
+        /// </summary>
+        /// <returns> Profile list.</returns>
+        Task<IEnumerable<Profile>> GetProfilesAsync();
+
+        /// <summary>
+        /// Get profile based on provided ID query.
+        /// </summary>
+        /// <param name="id">Selected profile ID</param>
+        /// <returns></returns>
+        Task<Profile> GetProfileByIdAsync(int id);
+
+        /// <summary>
+        /// Add new profile to database.
+        /// </summary>
+        /// <param name="profile">Selected profle</param>
+        /// <returns></returns>
+        Task<bool> AddProfileAsync(Profile profile);
+
+        /// <summary>
+        /// Update existing profile.
+        /// </summary>
+        /// <param name="profile">Selected profile</param>
+        /// <returns></returns>
+        Task<bool> UpdateProfileAsync(Profile profile);
+
+        /// <summary>
+        /// Remove profile based on provided ID.
+        /// </summary>
+        /// <param name="id"> selected iD of profile</param>
+        /// <returns></returns>
+        Task<bool> RemoveProfileAsync(int id);
+
+        /// <summary>
+        /// Get all profiles in database based on certain conditions.
+        /// </summary>
+        /// <param name="predicate">Query conditions.</param>
+        /// <returns></returns>
+        Task<IEnumerable<Profile>> QueryProfilesAsync(Func<Profile, bool> predicate);
+
+        /// <summary>
+        /// Refreshes the database context.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        Task<bool> RefreshDbContext(EntityState state = EntityState.Modified);
+    }
+}

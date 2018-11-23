@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:views="clr-namespace:SmartFlow.Shared.Views"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             x:Class="SmartFlow.Shared.Views.CreateDeclarationPage">
+    <Grid RowSpacing="0" x:Name="pageGrid">
+        <Grid.RowDefinitions>
+                <RowDefinition Height="12*" />
+                <RowDefinition Height="76*" />
+                <RowDefinition Height="12*" />
+        </Grid.RowDefinitions>
+        <StackLayout AutomationId="AutomationId_Stacklayout_Header" Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Orientation="Horizontal">
+            <views:HeaderView AutomationId="AutomationId_HeaderView"/>
+        </StackLayout>
+        <StackLayout AutomationId="AutomationId_ContentView" VerticalOptions="Fill" Grid.Row="1">
+            <Grid x:Name="MainGrid" AutomationId="AutomationId_GridView">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30*"/>
+                    <ColumnDefinition Width="70*"/>
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </StackLayout>
+        <StackLayout AutomationId="AutomationId_StackLayout_Footer" Orientation="Horizontal" Grid.Row="2"  Padding="0" Spacing="0">
+            <views:FooterView  x:Name="FooterViewId"  AutomationId="AutomationId_FooterView"/>
+        </StackLayout>
+    </Grid>    
+</ContentPage>

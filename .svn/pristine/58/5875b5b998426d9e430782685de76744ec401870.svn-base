@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             x:Class="SmartFlow.Shared.Views.InfoView">
+
+    <StackLayout x:Name="InfoPageView" Spacing="0" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Orientation="Vertical" IsEnabled="False">
+        <Button x:Name="InfoButtonName" IsEnabled="False" WidthRequest="120" HeightRequest="120" Image="ic_exclamation_blue" BackgroundColor="{StaticResource SmartFlow_Yellow}" 
+                HorizontalOptions="CenterAndExpand" VerticalOptions="EndAndExpand" BorderRadius="60"/>
+        <Label x:Name="LabelText" Style="{StaticResource StandardFont}" Margin="20" LineBreakMode="WordWrap" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" />
+    </StackLayout>
+
+</ContentView>

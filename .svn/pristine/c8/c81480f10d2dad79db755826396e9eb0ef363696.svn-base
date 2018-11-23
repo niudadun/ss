@@ -1,0 +1,112 @@
+﻿using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Resources;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// MainMenuPagetutorial Layout
+    /// View to display options and tutorial information : Create Profile, Create Declaration, Manage Declaration
+    /// </summary>
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class MainMenuPageTutorial : ContentPage
+    {
+        private static string TAG = "MainMenuPageTutorial";
+
+        /// <summary>
+        /// MainMenuPageTutorial constructor
+        /// </summary>
+        public MainMenuPageTutorial()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+
+            FooterViewId.SetButtonHandling("").Clicked += OnCreateClicked;
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            Settings.AddBooleanPreference(Utils.PREFS_KEY_IS_APP_FIRST_LAUNCH, false);
+
+            //ServicesHeader.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_HEADER);
+            Profiles.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_PROFILE);
+            CreateDeclarationLabel.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_PAGE_BTN_CREATE_DEC);
+            ManageDeclarationLabel.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_DEC);
+            ProfilesInfo.Text = Shared.Resources.AppResources.profileinfo;
+            CreateDeclarationLabelInfo.Text = Shared.Resources.AppResources.createdeclarationinfo;
+            ManageDeclarationLabelInfo.Text = Shared.Resources.AppResources.managedeclarationinfo;
+
+            FooterViewId.SetButtonHandling(Shared.Resources.AppResources.closetext);
+
+            // Need to hide the image from the header, as we only want to show the text and ICA logo
+            HeaderViewID.HeaderBgImageVisible(false);
+            FooterViewId.GetBackButtonAndRemoveClick().Clicked += OnBackPressed;
+        }
+
+        /// <summary>
+        /// Create new Main menu page
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCreateClicked(object sender, EventArgs e)
+        {
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await App.NavigationService.GoBack(false);
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+                });
+            }
+            else
+            {
+                App.NavigationService.GoBack(false);
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+            }
+        }
+
+        private void OnBackPressed(object sender, EventArgs e)
+        {
+            OnBackButtonPressed();
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await App.NavigationService.GoBack(false);
+                    await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+                });
+            }
+            else
+            {
+                App.NavigationService.GoBack(false);
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+            }
+            return true;
+        }
+    }
+}

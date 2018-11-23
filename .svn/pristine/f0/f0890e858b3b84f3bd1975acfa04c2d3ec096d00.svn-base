@@ -1,0 +1,640 @@
+﻿using SmartFlow.Shared.Behaviours;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Repository.Interfaces;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using ImageCircle.Forms.Plugin.Abstractions;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using XLabs.Forms.Controls;
+using Plugin.Media;
+using SmartFlow.Shared.Converters;
+using SmartFlow.Shared.Helpers;
+using SmartFlow.Shared.Enums;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Profile Details Page
+    /// </summary>
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class ManageProfilePage : ContentPage
+    {
+        private static string TAG = "ManageProfilePage";
+        Dictionary<ChapterIdentifiers, ScrollView> layouts;
+
+        /// <summary>
+        /// Create a view model for this page.
+        /// </summary>
+        public ProfileViewModel ViewModel;
+
+        /// <summary>
+        /// Enum to determine in which state Profile Details page is
+        /// </summary>
+        Enums.EnumMaps Mode;
+
+        /// <summary>
+        /// Manage profile page constructor.
+        /// </summary>
+        public ManageProfilePage()
+        {
+            try
+            {
+                //Initializations
+                InitializeComponent();
+                this.Padding = App.PagePadding;
+                SetPageText(true);
+                Mode = Enums.EnumMaps.CREATE_INFO;
+                SetLayout(-1);
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText(bool isCreateNew)
+        {
+            //LoadingText.Text = Helpers.L10n.GetMappedString(isCreateNew ? Enums.TextMapping.ADD_PROFILE : Enums.TextMapping.LOADING_TEXT);
+        }
+
+        /// <summary>
+        /// Manage profile page constructor with Parameters (State, profile id)
+        /// </summary>
+        public ManageProfilePage(InfoHolder infoHolder)
+        {
+            try
+            {
+                //Initializations
+                InitializeComponent();
+                SetPageText(false);
+
+                Mode = infoHolder.getwhichMode();
+                SetLayout(infoHolder.getId());
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+        /// <summary>
+        /// Method to set the profile data model based on id and create the view according to state.
+        /// </summary>
+        /// <param name="Id"></param>
+        void SetLayout(int Id)
+        {
+            if (Id != -1)
+            {
+                ViewModel = new ProfileViewModel(Navigation, Id);
+                ViewModel.LoadAnswers();
+            }
+            else
+            {
+                ViewModel = new ProfileViewModel(Navigation);
+            }
+            BindingContext = ViewModel;
+
+            ////Grid Creation
+
+            CreateMenuLayout(ViewModel.CurrentProfile.Chapters);
+            layouts = new Dictionary<ChapterIdentifiers, ScrollView>
+            {
+                { ViewModel.CurrentProfile.Chapters[0].ChapterIdentifier, CreateDataLayout(ViewModel.CurrentProfile.Chapters[0]) }
+            };
+            var dataLayout = layouts[ChapterIdentifiers.Particulars];
+            var grid = this.FindByName<Grid>("MainGrid");
+            grid.Children.Add(dataLayout);
+            Grid.SetColumn(dataLayout, 1);
+
+            var stackLayout = (StackLayout)dataLayout.Content;
+            if (Mode == Enums.EnumMaps.VIEW_INFO)
+            {
+                FooterViewId.SetButtonHandling("");
+                FooterViewId.SetButtonVisible(false);
+                FooterViewId.GetBackButtonAndRemoveClick().Clicked += OnBackclicked;
+
+                //Button visibilities
+                stackLayout.IsEnabled = false;
+            }
+            else if (Mode == Enums.EnumMaps.UPDATE_INFO)
+            {
+                FooterViewId.SetButtonHandling("").Clicked += OnSaveClicked;
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.UPDATE_TEXT));
+                FooterViewId.GetBackButtonAndRemoveClick().Clicked += OnBackclicked;
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+            }
+            else if (Mode == Enums.EnumMaps.CREATE_INFO)
+            {
+                FooterViewId.SetButtonHandling("").Clicked += OnSaveClicked;
+                FooterViewId.SetButtonHandling(Helpers.L10n.GetMappedString(Enums.TextMapping.SAVE_TEXT));
+                FooterViewId.GetBackButtonAndRemoveClick().Clicked += OnBackclicked;
+
+                stackLayout.IsEnabled = true;
+                stackLayout.BackgroundColor = Color.Transparent;
+                stackLayout.Opacity = 1;
+            }
+        }
+
+        private void CreateMenuLayout(List<Chapter> Chapters)
+        {
+
+            var stackLayout = new StackLayout()
+            {
+                Orientation = StackOrientation.Vertical,
+                VerticalOptions = LayoutOptions.FillAndExpand,
+                Spacing = 1
+            };
+
+            var headerButton = new ImageButton()
+            {
+                // TextColor = (Color)Application.Current.Resources["Text_Color"],
+                WidthRequest = 80,
+                HeightRequest = 80,
+                BorderRadius = 0,
+                Orientation = XLabs.Enums.ImageOrientation.ImageCentered,
+                Source = ImageSource.FromFile(Utils.DEFAULT_PROFILE_PIC),
+                BackgroundColor = (Color)Application.Current.Resources["SmartFlow_Yellow"],
+            };
+            stackLayout.Children.Add(headerButton);
+            foreach (var chapter in Chapters)
+            {
+                var button = new Button()
+                {
+                    ClassId = chapter.ChapterIdentifier.ToString(),
+                    Text = chapter.Text,
+                    TextColor = (Color)Application.Current.Resources["Text_Color"],
+                    WidthRequest = 80,
+                    HeightRequest = 80,
+                    BorderRadius = 0,
+                    BackgroundColor = (Color)Application.Current.Resources["TextView_Bg"],
+                };
+                stackLayout.Children.Add(button);
+            }
+
+            var grid = this.FindByName<Grid>("MainGrid");
+
+            var scrollView = new ScrollView()
+            {
+                Content = stackLayout,
+            };
+            grid.Children.Add(scrollView);
+            Grid.SetColumn(scrollView, 0);
+        }
+
+        /// <summary>
+        /// Dynamically create layout based on view model.
+        /// </summary>
+        /// <param name="chapter"></param>
+        /// <returns></returns>
+        private ScrollView CreateDataLayout(Chapter chapter)
+        {
+
+            var stackLayout = new StackLayout()
+            {
+                Orientation = StackOrientation.Vertical,
+                VerticalOptions = LayoutOptions.FillAndExpand,
+                ClassId = chapter.ChapterIdentifier.ToString(),
+                Padding = new Thickness(20, 10, 20, 10),
+            };
+
+            //Create circle profile photo.
+            //var circlePhoto = new ImageCircle.Forms.Plugin.Abstractions.CircleImage
+            //{
+            //    WidthRequest = 100,
+            //    HeightRequest = 100,
+            //    BackgroundColor = Color.Transparent,
+            //    Aspect = Aspect.AspectFill,
+            //    HorizontalOptions = LayoutOptions.Center
+            //};
+            //if (ViewModel.CurrentProfile.Image != null)
+            //{
+            //    var stream = new MemoryStream(ViewModel.CurrentProfile.Image);
+            //    circlePhoto.Source = ImageSource.FromStream(() => stream);
+            //}
+            //else
+            //{
+            //    circlePhoto.Source = ImageSource.FromFile(Utils.DEFAULT_PROFILE_PIC);
+            //}
+
+            //TapGestureRecognizer recognizer = new TapGestureRecognizer();
+            //recognizer.Tapped += (sender2, args) =>
+            //{
+            //    Takephoto(circlePhoto);
+            //};
+            //circlePhoto.GestureRecognizers.Add(recognizer);
+            //stackLayout.Children.Add(circlePhoto);
+
+            //Create question list based on view model.
+            foreach (var question in chapter.Questions)
+            {
+                var label = new Label()
+                {
+                    ClassId = question.QuestionIdentifier.ToString() + "_label",
+                    Text = question.Text,
+                    VerticalTextAlignment = TextAlignment.Center,
+                    HorizontalOptions = LayoutOptions.StartAndExpand,
+                    Style = (Style)Application.Current.Resources["SmallFont"],
+                };
+                stackLayout.Children.Add(label);
+
+                var validationLabel = new Label()
+                {
+                    TextColor = Color.Red,
+                    IsVisible = false,
+                    ClassId = question.QuestionIdentifier.ToString() + "_validationlabel"
+                };
+                var type = question.Type;
+                switch (type)
+                {
+                    case QuestionType.Date:
+                        var datePicker = new DatePicker
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            Format = Utils.DATE_FORMAT,
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString(),
+
+                        };
+                        if (question.Config != null)
+                        {
+                            if (question.Config.MaxDate != null)
+                            {
+                                datePicker.SetBinding(DatePicker.MaximumDateProperty, new Binding("MaxDate", BindingMode.OneWay, source: question.Config));
+                            }
+                            if (question.Config.MinDate != null)
+                            {
+                                datePicker.SetBinding(DatePicker.MinimumDateProperty, new Binding("MinDate", BindingMode.OneWay, source: question.Config));
+                            }
+                        }
+                        datePicker.SetBinding(DatePicker.DateProperty, new Binding("AnswerText", source: question));
+                        stackLayout.Children.Add(datePicker);
+
+                        //label.IsVisible = question.IsVisible;
+                        //datePicker.IsVisible = question.IsVisible;
+                        break;
+                    case QuestionType.DropDown:
+                        var ddList = new List<string>();
+                        foreach (var s in question.Answers)
+                        {
+                            ddList.Add(s.Text);
+                        }
+                        var dd = new ExtendedPicker()
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString(),
+                            ItemsSource = ddList,
+                            SelectedIndex = -1
+                        };
+                        dd.SelectedIndex = question.SelectedAnswerIndex;
+                        //dd.SelectedItem = question.AnswerText;
+                        dd.SetBinding(ExtendedPicker.SelectedIndexProperty, new Binding("SelectedAnswerIndex", source: question));
+                        dd.SetBinding(ExtendedPicker.SelectedItemProperty, new Binding("AnswerText", source: question));
+                        dd.Behaviors.Add(new PickerValidationBehaviour());
+                        stackLayout.Children.Add(validationLabel);
+                        stackLayout.Children.Add(dd);
+                        if (dd.SelectedIndex <= 0)
+                        {
+                            dd.IsVisible = question.IsVisible;
+                            label.IsVisible = question.IsVisible;
+                        }
+
+                        if (question.Answers.Exists(i => (i.ConditionalQuestion != null && i.ConditionalQuestion.Exists(j => j.ConditionQuestion != QuestionIdenfiers.PARTICULARS))))
+                            dd.SelectedIndexChanged += SelectedIndexChanged;
+                        break;
+                    case QuestionType.RadioButton:
+                        var answersList = new List<string>();
+                        foreach (var s in question.Answers)
+                        {
+                            answersList.Add(s.Text);
+                        }
+                        var ctrl = new BindableRadioGroup
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            ItemsSource = answersList,
+                            SelectedIndex = -1,
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString(),
+                        };
+
+                        ctrl.SelectedIndex = question.SelectedAnswerIndex;
+                        ctrl.SetBinding(BindableRadioGroup.SelectedIndexProperty, new Binding("SelectedAnswerIndex", source: question));
+                        stackLayout.Children.Add(ctrl);
+                        break;
+                    default:
+                        var entry = new Entry()
+                        {
+                            ClassId = question.QuestionIdentifier.ToString(),
+                            AutomationId = Utils.AUTOMATION_ID + question.QuestionIdentifier.ToString()
+                        };
+                        entry.Keyboard = Keyboard.Default;
+                        try
+                        {
+                            entry.SetBinding(Entry.TextProperty, new Binding("AnswerText", source: question, converter: new TrimConverter()));
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHandler.AddExceptionLog(TAG, "", ex, true);
+                        }
+                        if (question.Config != null)
+                        {
+                            if (question.Config.MaxLength != 0)
+                            {
+                                entry.Behaviors.Add(new LengthValidationBehaviour()
+                                {
+                                    MaxLength = question.Config.MaxLength,
+                                });
+                            }
+                            if (question.Config.IsRequired)
+                            {
+                                entry.Behaviors.Add(new EmptyValidationBehaviour());
+                            }
+                            if (question.Config.ValidateSpecialCharacters)
+                            {
+                                entry.Behaviors.Add(new CharacterValidationBehaviour());
+                            }
+                            if (question.Config.AllowOnlyNumeric)
+                            {
+                                entry.Keyboard = Keyboard.Numeric;
+                                entry.Behaviors.Add(new NumericValidationBehavior());
+                            }
+                            if (question.Config.ValidateEmailAddress)
+                            {
+                                entry.Keyboard = Keyboard.Email;
+                                entry.Behaviors.Add(new EmailValidationBehavior());
+                            }
+                            if (question.Config.ValidateContactNumber)
+                            {
+                                entry.Keyboard = Keyboard.Telephone;
+                            }
+                        }
+
+                        if (question.Config != null)
+                        {
+                            stackLayout.Children.Add(validationLabel);
+                        }
+                        if (entry.Text.Length <= 0)
+                        {
+                            entry.IsVisible = question.IsVisible;
+                            label.IsVisible = question.IsVisible;
+                        }
+                        stackLayout.Children.Add(entry);
+                        break;
+                }
+
+            }
+            return new ScrollView()
+            {
+                Content = stackLayout,
+                ClassId = chapter.ChapterIdentifier.ToString(),
+            };
+            //return stackLayout;
+        }
+
+        /// <summary>
+        /// Method to launch photo picker
+        /// </summary>
+        /// <param name="circlePhoto"></param>
+        private async void Takephoto(ImageCircle.Forms.Plugin.Abstractions.CircleImage circlePhoto)
+        {
+            if (!CrossMedia.Current.IsPickPhotoSupported)
+            {
+                await DisplayAlert(Shared.Resources.AppResources.photo_support_unavailable, Shared.Resources.AppResources.photo_permission_unavailable,
+                    Shared.Resources.AppResources.ok_text);
+                return;
+            }
+            var file = await Plugin.Media.CrossMedia.Current.PickPhotoAsync(new Plugin.Media.Abstractions.PickMediaOptions
+            {
+                PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium
+            });
+
+
+            if (file == null)
+                return;
+
+            ViewModel.CurrentProfile.Image = ReadFully(file.GetStream());
+            circlePhoto.Source = ImageSource.FromStream(() =>
+                new MemoryStream(ViewModel.CurrentProfile.Image)
+            );
+        }
+
+        /// <summary>
+        /// Read photo from stream
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private byte[] ReadFully(Stream input)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                input.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Validation checker method.
+        /// this method checks all the validation behaviours applied for different views added to the profile details page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        bool Validation<T>() where T : BindableObject
+        {
+            var isValid = true;
+            try
+            {
+                var grid = this.FindByName<Grid>("MainGrid");
+                var scrollView = (ScrollView)grid.Children[1];
+                var stackLayout = (StackLayout)scrollView.Content;
+                foreach (var i in stackLayout.Children)
+                {
+                    if (i is T && i.IsVisible)
+                    {
+                        foreach (var j in i.Behaviors)
+                        {
+                            var behaviour = j as BaseBehaviour<T>;
+                            var label = (Label)stackLayout.Children.First(k => k is Label && k.ClassId == (i.ClassId + "_validationlabel"));
+                            label.IsVisible = false;
+
+                            if (behaviour.IsValid) continue;
+                            else
+                            {
+                                label.IsVisible = true;
+                                isValid = false;
+                                label.Text = behaviour.ValidationMessage;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+
+            return isValid;
+        }
+
+        bool CheckValidation()
+        {
+            var IsEntryValidated = Validation<Entry>();
+            var IsPickerValidated = Validation<ExtendedPicker>();
+
+            return IsEntryValidated && IsPickerValidated;
+        }
+
+        /// <summary>
+        /// When selection for country is changed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ConditionalMapping(sender);
+        }
+
+        void ConditionalMapping(object sender)
+        {
+            try
+            {
+                var picker = (ExtendedPicker)sender;
+
+                var grid = this.FindByName<Grid>("MainGrid");
+                var scrollView = (ScrollView)grid.Children[1];
+                var stackLayout = (StackLayout)scrollView.Content;
+
+                var Question = ViewModel.CurrentProfile.Chapters[0].Questions.Find(i => i.QuestionIdentifier.ToString() == picker.ClassId);
+
+                if (Question != null && Question.Answers != null)
+                {
+                    List<Answer> AnswerList = Question.Answers.FindAll(i => (i.ConditionalQuestion != null && i.ConditionalQuestion.Exists(j => j.ConditionQuestion != QuestionIdenfiers.PARTICULARS)));
+                    AnswerList.ForEach(i =>
+                    {
+                        i.ConditionalQuestion.ForEach(j =>
+                        {
+
+                            var validationLabel = stackLayout.Children.First(k => k is Label && k.ClassId == (j.ConditionQuestion.ToString() + "_validationlabel"));
+                            var label = stackLayout.Children.First(k => k is Label && k.ClassId == (j.ConditionQuestion.ToString() + "_label"));
+                            var editView = stackLayout.Children.First(k => k is Entry && k.ClassId == j.ConditionQuestion.ToString());
+
+                            if (i != null && i.Text == picker.SelectedItem.ToString())
+                            {
+                            // maintain visibility of validation label what ever it is.
+                            label.IsVisible = true;
+                                editView.IsVisible = true;
+                            }
+                            else
+                            {
+                                validationLabel.IsVisible = false;
+                                label.IsVisible = false;
+                                editView.IsVisible = false;
+                                ((Entry)editView).Text = "";
+                            }
+
+                        });
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+        /// <summary>
+        /// Save Action button click handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        async void OnSaveClicked(object sender, EventArgs e)
+        {
+            if (CheckValidation())
+            {
+                bool isDone = false;
+                if (Mode == Enums.EnumMaps.CREATE_INFO)
+                {
+                    var answer = await DisplayAlert(Shared.Resources.AppResources.profile_save_message, Shared.Resources.AppResources.ok_proceed,
+                    Shared.Resources.AppResources.ok_text, Shared.Resources.AppResources.cancel_text);
+                    isDone = answer;
+                    if (answer)
+                    {
+                        ViewModel.AddCommand.Execute(null);
+                    }
+                }
+                else if (Mode == Enums.EnumMaps.UPDATE_INFO)
+                {
+                    var answer = await DisplayAlert(Shared.Resources.AppResources.profile_update_message, Shared.Resources.AppResources.ok_proceed,
+                        Shared.Resources.AppResources.ok_text, Shared.Resources.AppResources.cancel_text);
+                    isDone = answer;
+                    if (answer)
+                    {
+                        ViewModel.UpdateCommand.Execute(null);
+                    }
+                }
+                if (isDone)
+                {
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        await App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.SuccessPage.ToString(), Mode, false);
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Back button trigger event.
+        /// This button is available in footerView, but the callback handler is registered in this class.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        async void OnBackclicked(object sender, EventArgs e)
+        {
+            OnBackButtonPressed();
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            if (Mode == Enums.EnumMaps.VIEW_INFO)
+            {
+                FooterViewId.BackBtnCommand.Execute(null);
+            }
+            else
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    var answer = await DisplayAlert(Shared.Resources.AppResources.changes_lost_message, Shared.Resources.AppResources.ok_proceed,
+                    Shared.Resources.AppResources.ok_text, Shared.Resources.AppResources.cancel_text);
+                    if (answer)
+                    {
+                        FooterViewId.BackBtnCommand.Execute(null);
+                    }
+                });
+            }
+
+            return true;
+        }
+    }
+
+}

@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="X5k-f2-b5h">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="gAE-YM-kbH">
+            <objects>
+                <viewController id="X5k-f2-b5h" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Y8P-hJ-Z43"/>
+                        <viewControllerLayoutGuide type="bottom" id="9ZL-r4-8FZ"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="yd7-JS-zBw">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="23" image="ica_logo.png">
+                                <rect key="frame" x="156" y="251" width="103" height="164"/>
+                                <rect key="contentStretch" x="0.0" y="0.0" width="0.0" height="0.0"/>
+                            </imageView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="23" firstAttribute="centerY" secondItem="yd7-JS-zBw" secondAttribute="centerY" priority="1" id="39"/>
+                            <constraint firstItem="23" firstAttribute="centerX" secondItem="yd7-JS-zBw" secondAttribute="centerX" priority="1" id="41"/>
+                        </constraints>
+                        <color key="backgroundColor" colorSpace="calibratedRGB" red="0.074509803921568626" green="0.22352941176470589" blue="0.3411764705882353" alpha="1"/>
+                        <color key="tintColor" colorSpace="calibratedRGB" red="0.074509803921568626" green="0.22352941176470589" blue="0.3411764705882353" alpha="1"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="XAI-xm-WK6" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="349" y="339"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="Asset22.png" width="416.666656" height="232.666672"/>
+        <image name="footerLogo.png" width="51" height="46"/>
+        <image name="ic_back_arrow_blue.png" width="15" height="30"/>
+        <image name="ic_back_arrow_white.png" width="15" height="29"/>
+        <image name="ic_camera_blue.png" width="52" height="41"/>
+        <image name="ic_edit_blue.png" width="24" height="24"/>
+        <image name="ic_edit_white.png" width="25" height="24"/>
+        <image name="ic_enter_services_blue.png" width="19" height="31"/>
+        <image name="ic_enter_services_white.png" width="20" height="31"/>
+        <image name="ic_exclamation_blue.png" width="6" height="79"/>
+        <image name="ic_forward_arrow_white.png" width="13" height="26"/>
+        <image name="ic_id_blue.png" width="52" height="41"/>
+        <image name="ic_id_white.png" width="53" height="41"/>
+        <image name="ic_manage_delcaration_blue.png" width="35" height="32"/>
+        <image name="ic_manage_delcaration_white.png" width="34" height="33"/>
+        <image name="ic_new_declaration_blue.png" width="25" height="33"/>
+        <image name="ic_new_declaration_white.png" width="24" height="32"/>
+        <image name="ic_profile_blue.png" width="26" height="40"/>
+        <image name="ic_profile_pic.png" width="93" height="93"/>
+        <image name="ic_profile_white.png" width="25" height="40"/>
+        <image name="ic_select_language_blue.png" width="33" height="31"/>
+        <image name="ic_success_blue.png" width="78" height="55"/>
+        <image name="ic_wheel_blue.png" width="77" height="77"/>
+        <image name="ic_wheel_full.png" width="151" height="150"/>
+        <image name="ic_wheel_yellow.png" width="149" height="149"/>
+        <image name="ica_logo.png" width="105" height="93"/>
+        <image name="Icon_Delete.png" width="46" height="47"/>
+        <image name="Icon_Edit.png" width="32" height="30"/>
+        <image name="Icon_Plus.png" width="44" height="41"/>
+        <image name="Icon_Save.png" width="67" height="67"/>
+        <image name="QR.png" width="73.3333359" height="73.3333359"/>
+    </resources>
+</document>

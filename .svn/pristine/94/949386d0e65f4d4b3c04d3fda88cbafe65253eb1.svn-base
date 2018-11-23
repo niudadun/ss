@@ -1,0 +1,31 @@
+﻿using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Models.Ede.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SmartFlow.Shared.Respository.Interfaces
+{
+    /// <summary>
+    /// Interface for Declaration Database
+    /// </summary>
+    public interface IDeclarationsRepository
+    {
+        Task<IEnumerable<Declaration>> GetDeclarationsAsync();
+
+        Task<Declaration> GetDeclarationByIdAsync(int id);
+
+        Task<Declaration> GetDeclarationByTypeAsync(DeclarationType Type);
+
+        Task<bool> AddDeclarationAsync(Declaration declaration);
+
+        Task<bool> UpdateDeclarationAsync(Declaration declaration);
+
+        Task<bool> RemoveDeclarationAsync(int id);
+
+        Task<IEnumerable<Declaration>> QueryDeclarationsAsync(Func<Declaration, bool> predicate);
+
+    }
+}

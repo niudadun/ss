@@ -1,0 +1,120 @@
+﻿using SmartFlow.Shared.Helpers.Interfaces;
+using SmartFlow.Shared.Models;
+using SmartFlow.Shared.Respository;
+using SmartFlow.Shared.Respository.Interfaces;
+using SmartFlow.Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ImageCircle.Forms.Plugin.Abstractions;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using SmartFlow.Shared.Converters;
+using SmartFlow.Shared.Helpers;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Language Selection Info Dialog Page
+    /// When user clicks on any Language item in Langauge Selection page, this view is generated
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class LanguageSelectionDialogPage : ContentPage
+	{
+        private static string TAG = "LanguageSelectionDialogPage";
+        Enums.EnumMaps Mode;
+        string LanguageCode;
+
+        /// <summary>
+        /// Language Info page constructor.
+        /// </summary>
+        public LanguageSelectionDialogPage()
+        {
+            InitializeComponent();
+            this.Padding = App.PagePadding;
+            
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Language Selection Info Page Constructor
+        /// </summary>
+        public LanguageSelectionDialogPage(InfoHolder infoHolder)
+        {
+            InitializeComponent();
+
+            Mode = infoHolder.getwhichMode();
+            LanguageCode = infoHolder.GetLanguageCode();
+            SetPageText();
+        }
+
+        /// <summary>
+        /// Method to set the text for the view layout
+        /// </summary>
+        void SetPageText()
+        {
+            //titleHeader.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.PROFILE_LIST);
+            FooterViewId.IsVisible = false;
+            if (Mode == Enums.EnumMaps.LANGUAGE_SELECTION)
+            {
+                InfoText.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.LANGUAGE_SELECTION_TEXT, LanguageCode);
+                BtnYes.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.YES_TEXT, LanguageCode);
+                BtnNo.Text = Helpers.L10n.GetMappedString(Enums.TextMapping.NO_TEXT, LanguageCode);
+            }
+        }
+
+        /// <summary>
+        /// Update Profile Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnYesClicked(object sender, EventArgs e)
+        {
+            Settings.AddOrUpdateValue(Utils.PREFS_KEY_LANGUAGE_SELECTION, LanguageCode);
+            // Not setting the culture of the app, as the keyboard should remains in default language of the device.
+            // We only change language to show label text and queston text. Answers are always in English Text.
+            L10n.SetLanguage();
+
+            // Backing up Language info page and Language selection page.
+            App.NavigationService.GoBack(false);
+            App.NavigationService.GoBack(false);
+            //await DisplayAlert(Shared.Resources.AppResources.info_text, Shared.Resources.AppResources.language_change_success, Shared.Resources.AppResources.DoneButton);
+            if (Settings.GetBooleanPreference(Utils.PREFS_KEY_IS_APP_FIRST_LAUNCH))
+            {
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPageTutorial.ToString(), false);
+            }
+            else
+            {
+                App.NavigationService.NavigateModalAsync(Enums.PageEnumsForNavigation.MainMenuPage.ToString(), false);
+            }
+        }
+
+        /// <summary>
+        /// Update Profile Button Clicked 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnNoClicked(object sender, EventArgs e)
+        {
+            App.NavigationService.GoBack(false);
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            App.NavigationService.GoBack(false);
+            return true;
+        }
+    }
+}

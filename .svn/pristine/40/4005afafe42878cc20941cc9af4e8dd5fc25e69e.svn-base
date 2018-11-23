@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:views="clr-namespace:SmartFlow.Shared.Views"
+             xmlns:forms="clr-namespace:Xamarin.Forms;assembly=Xamarin.Forms.CarouselView"
+             xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFlow.Shared.Views.LanguagePage">
+    <ContentPage.Content>
+        <Grid x:Name="LanguageGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="12*" />
+                <RowDefinition Height="76*" />
+                <RowDefinition Height="12*" />
+            </Grid.RowDefinitions>
+            <StackLayout Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Orientation="Horizontal" Margin="0" Padding="0">
+                <views:HeaderView />
+            </StackLayout>
+            <forms:CarouselView x:Name="MainCarouselView" Grid.Row="1">
+            </forms:CarouselView>
+            <StackLayout Orientation="Horizontal" Grid.Row="2">
+                <views:FooterView />
+            </StackLayout>
+        </Grid>
+        
+    </ContentPage.Content>
+   
+    
+</ContentPage>

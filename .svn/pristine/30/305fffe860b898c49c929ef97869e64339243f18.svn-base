@@ -1,0 +1,89 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SmartFlow.Shared.ViewModels;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
+using SmartFlow.Shared.Helpers;
+
+namespace SmartFlow.Shared.Views
+{
+    /// <summary>
+    /// Declaration Details Page
+    /// </summary>
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class ManageDeclarationPage : ContentPage
+	{
+        private static string TAG = "ManageDeclarationPage";
+
+        /// <summary>
+        /// ManageDeclarationPage constructor
+        /// </summary>
+        public ManageDeclarationPage ()
+		{
+            try
+            {
+                InitializeComponent();
+                this.Padding = App.PagePadding;
+                //Binding view model.
+                var viewModel = new ProfileViewModel(Navigation);
+                BindingContext = viewModel;
+            }
+            catch (Exception ex)
+            {
+                LogHandler.AddExceptionLog(TAG, "", ex, true);
+            }
+        }
+
+
+        public void navigateSuccess()
+        {
+            //await
+            //Navigation.PushModalAsync(new MainMenuPage());
+        }
+
+        private void OnSaveClicked(object sender, EventArgs e)
+        {
+
+            //Button button = (Button)sender;
+            //await button.Command.CanExecute;
+            //var todoItem = (TodoItem)BindingContext;
+            //await App.Database.SaveItemAsync(todoItem);
+            // Navigation.PushModalAsync(new SaveSucess());
+        }
+
+        async void OnDeleteClicked(object sender, EventArgs e)
+        {
+            //var todoItem = (TodoItem)BindingContext;
+            //await App.Database.DeleteItemAsync(todoItem);
+            //await Navigation.PopAsync();
+        }
+
+        async void OnCancelClicked(object sender, EventArgs e)
+        {
+            //await Navigation.PopAsync();
+        }
+
+        private void Navigate()
+        {
+            // Navigation.PushModalAsync(new SaveSucess());
+        }
+
+        /// <summary>
+        /// Application developers can override this method to provide behavior when the back button is pressed.
+        /// </summary>
+        /// <returns>
+        /// To be added.
+        /// </returns>
+        /// <remarks>
+        /// Handled default back navigation of android to Custom Navigation.
+        /// </remarks>
+        protected override bool OnBackButtonPressed()
+        {
+            App.NavigationService.GoBack(false);
+            return true;
+        }
+    }
+}

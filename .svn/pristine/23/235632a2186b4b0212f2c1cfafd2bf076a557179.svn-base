@@ -1,0 +1,760 @@
+﻿using SmartFlow.Shared.Helpers.Interfaces;
+using SmartFlow.Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Reflection;
+using System.Resources;
+using Xamarin.Forms;
+
+namespace SmartFlow.Shared.Helpers
+{
+    /// <summary>
+    /// Class to fetch language string.
+    /// App use mappings for Question texts and Api labels.
+    /// App also uses mapper for normal text strings.
+    /// </summary>
+    public class L10n
+    {
+        private static string TAG = "L10n";
+
+        const string ResourceId = "SmartFlow.Shared.Resources";
+
+        /// <summary>
+        /// Sets the locale culture of the app
+        /// </summary>
+        /// <param name="ci">The ci.</param>
+        public static void SetLocale(CultureInfo ci)
+        {
+            DependencyService.Get<ILocale>().SetLocale(ci);
+        }
+
+        /// <remarks>
+        /// Get the locale of the app based on different platform
+        /// </remarks>
+        [Obsolete]
+        public static string Locale()
+        {
+            //TODO : Maybe we can cache this info rather than querying every time
+            return DependencyService.Get<ILocale>().GetCurrentCultureInfo().ToString();
+        }
+
+        /// <summary>
+        /// Localizes the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="comment">The comment.</param>
+        /// <returns></returns>
+        public static string Localize(string key, string comment)
+        {
+            //var netLanguage = Locale ();
+
+            // Platform-specific
+            ResourceManager temp = new ResourceManager(ResourceId, typeof(L10n).GetTypeInfo().Assembly);
+            LogHandler.AddLogToDebug(TAG, "Localize " + key);
+            string result = temp.GetString(key, DependencyService.Get<ILocale>().GetCurrentCultureInfo());
+
+            if (result == null)
+            {
+                result = key; // HACK: return the key, which GETS displayed to the user
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This function is used to set local culture of the app based on the language selected by the user.
+        /// </summary>
+        public static void SetLanguage()
+        {
+            try
+            {
+                var ci = DependencyService.Get<ILocale>().GetCurrentCultureInfo();
+                if (!string.IsNullOrEmpty(Settings.GetValueOrDefault(Utils.PREFS_KEY_LANGUAGE_SELECTION)))
+                {
+                    ci = new System.Globalization.CultureInfo(Settings.GetValueOrDefault(Utils.PREFS_KEY_LANGUAGE_SELECTION));
+                }
+                else
+                {
+                    ci = new System.Globalization.CultureInfo("en");
+                }
+                SetLocale(ci);
+                Resources.AppResources.Culture = ci;
+            }
+            catch (Exception e)
+            {
+                LogHandler.AddExceptionLog(TAG, "", e, true);
+
+                var ci = new System.Globalization.CultureInfo("en");
+                SetLocale(ci);
+                Resources.AppResources.Culture = ci;
+            }
+        }
+
+        /// <summary>
+        /// Get the mapped string for DropDown Data based on the question identifier.
+        /// This method will check if their is any available mapping to Config Api data and picks the value from their.
+        /// Else it will use the local resource file to set the question label
+        /// </summary>
+        /// <param name="textMapping">Profile Question Identifier</param>
+        /// <returns>String text</returns>
+        public static string GetDropDowneMappedString(Enums.DropDownData textMapping)
+        {
+            string apiValue = Enums.Enumerators.GetTextForDropDown(textMapping);
+            if (apiValue.Length > 0)
+            {
+                string getValueFromApi = "";
+                if (getValueFromApi.Length > 0)
+                {
+                    return getValueFromApi.Trim();
+                }
+            }
+            //Chinese
+            if (Settings.GetValueOrDefault(Utils.PREFS_KEY_LANGUAGE_SELECTION) == "zh-Hans")
+            {
+                switch (textMapping)
+                {
+                    case Enums.DropDownData.Male:
+                        return "男";
+                    case Enums.DropDownData.Female:
+                        return "女";
+                    case Enums.DropDownData.AIR:
+                        return "天空";
+                    case Enums.DropDownData.LAND:
+                        return "陆地";
+                    case Enums.DropDownData.SEA:
+                        return "海洋";
+                    case Enums.DropDownData.COMMERCIAL:
+                        return "商业";
+                    case Enums.DropDownData.PRIVATE:
+                        return "私人";
+                    case Enums.DropDownData.BUS:
+                        return "公交";
+                    case Enums.DropDownData.CAR:
+                        return "汽车";
+                    case Enums.DropDownData.LORRY:
+                        return "货车";
+                    case Enums.DropDownData.MOTORCYLE:
+                        return "摩托";
+                    case Enums.DropDownData.RAIL:
+                        return "铁路";
+                    case Enums.DropDownData.VAN:
+                        return "面包车";
+                    case Enums.DropDownData.CRUISE:
+                        return "巡航";
+                    case Enums.DropDownData.FERRY:
+                        return "轮渡";
+                    case Enums.DropDownData.VESSLE:
+                        return "船舶";
+                    case Enums.DropDownData.PRIVATE_CRAFT:
+                        return "私人飞机";
+                    case Enums.DropDownData.COMMERCIAL_VESSEL:
+                        return "商业船只";
+                    case Enums.DropDownData.ACCO_HOTEL:
+                        return "酒店";
+                    case Enums.DropDownData.ACCO_PRIVATE:
+                        return "私人";
+                    case Enums.DropDownData.ACC_OTHER:
+                        return "其它";
+                    case Enums.DropDownData.YES:
+                        return "是";
+                    case Enums.DropDownData.NO:
+                        return "否";
+                }
+            }
+
+            switch (textMapping)
+            {
+                case Enums.DropDownData.Male:
+                    return "Male";
+                case Enums.DropDownData.Female:
+                    return "Female";
+                case Enums.DropDownData.AIR:
+                    return "Air";
+                case Enums.DropDownData.LAND:
+                    return "Land";
+                case Enums.DropDownData.SEA:
+                    return "Sea";
+                case Enums.DropDownData.COMMERCIAL:
+                    return "Commercial";
+                case Enums.DropDownData.PRIVATE:
+                    return "Private";
+                case Enums.DropDownData.BUS:
+                    return "Bus";
+                case Enums.DropDownData.CAR:
+                    return "Car";
+                case Enums.DropDownData.LORRY:
+                    return "Lorry";
+                case Enums.DropDownData.MOTORCYLE:
+                    return "Motorcycle";
+                case Enums.DropDownData.RAIL:
+                    return "Rail";
+                case Enums.DropDownData.VAN:
+                    return "Van";
+                case Enums.DropDownData.CRUISE:
+                    return "Cruise";
+                case Enums.DropDownData.FERRY:
+                    return "Ferry";
+                case Enums.DropDownData.VESSLE:
+                    return "Vessel";
+                case Enums.DropDownData.PRIVATE_CRAFT:
+                    return "Private Craft";
+                case Enums.DropDownData.COMMERCIAL_VESSEL:
+                    return "Commercial Vessel";
+                case Enums.DropDownData.ACCO_HOTEL:
+                    return "Hotel";
+                case Enums.DropDownData.ACCO_PRIVATE:
+                    return "Private";
+                case Enums.DropDownData.ACC_OTHER:
+                    return "Others";
+                case Enums.DropDownData.YES:
+                    return "Yes";
+                case Enums.DropDownData.NO:
+                    return "No";
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Get the mapped string for Profile Input Screen based on the question identifier.
+        /// This method will check if their is any available mapping to Config Api data and picks the value from their.
+        /// Else it will use the local resource file to set the question label
+        /// </summary>
+        /// <param name="textMapping">Profile Question Identifier</param>
+        /// <returns>String text</returns>
+        public static string GetQuestionIdentifierMappedString(Enums.QuestionIdenfiers textMapping)
+        {
+            string apiValue = Enums.Enumerators.GetQuestionLabelFromApi(textMapping);
+            if (apiValue.Length > 0)
+            {
+                string getValueFromApi = "";
+                if (getValueFromApi.Length > 0)
+                {
+                    return getValueFromApi.Trim();
+                }
+            }
+            if (Settings.GetValueOrDefault(Utils.PREFS_KEY_LANGUAGE_SELECTION) == "zh-Hans")
+            {
+                switch (textMapping)
+                {
+                    case Enums.QuestionIdenfiers.PARTICULARS:
+                        return "细节";
+                    case Enums.QuestionIdenfiers.FULLNAME:
+                        return "全名";
+                    case Enums.QuestionIdenfiers.SEX:
+                        return "性别";
+                    case Enums.QuestionIdenfiers.DATE_OF_BIRTH:
+                        return "出生日期";
+                    case Enums.QuestionIdenfiers.PLACE_OF_RESIDENCE:
+                        return "出生地点";
+                    case Enums.QuestionIdenfiers.COUNTRY_OF_RESIDENCE:
+                        return "居住国家";
+                    case Enums.QuestionIdenfiers.STATE_OF_RESIDENCE:
+                        return "居住状态";
+                    case Enums.QuestionIdenfiers.CITY_OF_RESIDENCE:
+                        return "居住城市";
+                    case Enums.QuestionIdenfiers.COUNTRY_OF_BIRTH:
+                        return "出生国家";
+                    case Enums.QuestionIdenfiers.NATIONALITY:
+                        return "国籍";
+                    case Enums.QuestionIdenfiers.IDENTITY_CARD_NUMBER:
+                        return "身份证号码";
+                    case Enums.QuestionIdenfiers.PASSPORT_NUMBER:
+                        return "护照号码";
+                    case Enums.QuestionIdenfiers.PASSPORT_EXPIRY:
+                        return "护照到期日";
+                    case Enums.QuestionIdenfiers.PHONE_NUMBER:
+                        return "联系号码";
+                    case Enums.QuestionIdenfiers.PHONE_NUMBER_COUNTRY:
+                        return "联系电话国家";
+                    case Enums.QuestionIdenfiers.EMAIL:
+                        return "电子邮件地址";
+                    case Enums.QuestionIdenfiers.TRIP:
+                        return "旅程";
+                    case Enums.QuestionIdenfiers.ARRIVAL_DATE:
+                        return "预计到达时间";
+                    case Enums.QuestionIdenfiers.DEPARTURE_DATE:
+                        return "预计离开时间";
+                    case Enums.QuestionIdenfiers.TRANSPORT_TYPE:
+                        return "运输类型";
+                    case Enums.QuestionIdenfiers.TRANSPORT_TYPE_AIR:
+                        return "空运类型";
+                    case Enums.QuestionIdenfiers.TRANSPORT_TYPE_LAND_VEHICLE_TYPE:
+                        return "陆运类型";
+                    case Enums.QuestionIdenfiers.TRANSPORT_TYPE_SEA_VESSLE_TYPE:
+                        return "海运类型";
+                    case Enums.QuestionIdenfiers.CARRIER_CD:
+                        return "运营商代码";
+                    case Enums.QuestionIdenfiers.CARRIER_NAME:
+                        return "运营商名字";
+                    case Enums.QuestionIdenfiers.FLIGHT_NO:
+                        return "航班代码";
+                    case Enums.QuestionIdenfiers.VESSLE_NAME:
+                        return "船舶名称";
+                    case Enums.QuestionIdenfiers.CRUISE_NAME:
+                        return "巡航名称";
+                    case Enums.QuestionIdenfiers.VEHICLE_NO:
+                        return "车辆名称";
+                    case Enums.QuestionIdenfiers.ACCOMODATION_TYPE:
+                        return "住宿类型";
+                    case Enums.QuestionIdenfiers.ACCOMODATION_OTHER:
+                        return "其他住所";
+                    case Enums.QuestionIdenfiers.HOTEL_CD:
+                        return "酒店代码";
+                    case Enums.QuestionIdenfiers.HOTEL_NAME:
+                        return "酒店名字";
+                    case Enums.QuestionIdenfiers.ADDR_HOUSE_NO:
+                        return "房屋号";
+                    case Enums.QuestionIdenfiers.ADDR_FLOOR_NO:
+                        return "楼层号";
+                    case Enums.QuestionIdenfiers.ADDR_UNIT_NO:
+                        return "单元号";
+                    case Enums.QuestionIdenfiers.ADDR_BUILDING_NAME:
+                        return "建筑名称";
+                    case Enums.QuestionIdenfiers.ADDR_STREET:
+                        return "街道号码";
+                    case Enums.QuestionIdenfiers.ADDR_POSTAL_CODE:
+                        return "邮政编码";
+                    case Enums.QuestionIdenfiers.LAST_CITY_VISITED:
+                        return "上次去过的城市";
+                    case Enums.QuestionIdenfiers.NEXT_CITY_VISITING:
+                        return "将要访问的城市";
+                    case Enums.QuestionIdenfiers.DIFFERENT_PASSPORT:
+                        return "你曾经使用过不同名字的护照进入过新加坡吗";
+                    case Enums.QuestionIdenfiers.DIFFERENT_PASSPORT_NAME:
+                        return "和当前护照名称不同";
+                    case Enums.QuestionIdenfiers.TRAVEL_TO_OTHER_COUNTRIES:
+                        return "你去过或者将要去非洲旅行吗?";
+                    case Enums.QuestionIdenfiers.PROHIBIT_ENTER_SINGAPORE:
+                        return "你曾经被禁止进入新加坡吗";
+                }
+            }
+            
+
+            switch (textMapping)
+            {
+                case Enums.QuestionIdenfiers.PARTICULARS:
+                    return "Particulars";
+                case Enums.QuestionIdenfiers.FULLNAME:
+                    return "Full Name";
+                case Enums.QuestionIdenfiers.SEX:
+                    return "Sex";
+                case Enums.QuestionIdenfiers.DATE_OF_BIRTH:
+                    return "Date of Birth";
+                case Enums.QuestionIdenfiers.PLACE_OF_RESIDENCE:
+                    return "Place of Residence";
+                case Enums.QuestionIdenfiers.COUNTRY_OF_RESIDENCE:
+                    return "Country of Residence";
+                case Enums.QuestionIdenfiers.STATE_OF_RESIDENCE:
+                    return "State of Residence";
+                case Enums.QuestionIdenfiers.CITY_OF_RESIDENCE:
+                    return "City of Residence";
+                case Enums.QuestionIdenfiers.COUNTRY_OF_BIRTH:
+                    return "Country of Birth";
+                case Enums.QuestionIdenfiers.NATIONALITY:
+                    return "Nationality";
+                case Enums.QuestionIdenfiers.IDENTITY_CARD_NUMBER:
+                    return "Identity Card Number";
+                case Enums.QuestionIdenfiers.PASSPORT_NUMBER:
+                    return "Passport Number";
+                case Enums.QuestionIdenfiers.PASSPORT_EXPIRY:
+                    return "Date of Passport Expiry";
+                case Enums.QuestionIdenfiers.PHONE_NUMBER:
+                    return "Contact Number";
+                case Enums.QuestionIdenfiers.PHONE_NUMBER_COUNTRY:
+                    return "Contact Number Country";
+                case Enums.QuestionIdenfiers.EMAIL:
+                    return "Email Address";
+                case Enums.QuestionIdenfiers.TRIP:
+                    return "Trip";
+                case Enums.QuestionIdenfiers.ARRIVAL_DATE:
+                    return "Expected Date of Arrival";
+                case Enums.QuestionIdenfiers.DEPARTURE_DATE:
+                    return "Expected Date of Departure";
+                case Enums.QuestionIdenfiers.TRANSPORT_TYPE:
+                    return "Type of Transport";
+                case Enums.QuestionIdenfiers.TRANSPORT_TYPE_AIR:
+                    return "Type of Air Transport";
+                case Enums.QuestionIdenfiers.TRANSPORT_TYPE_LAND_VEHICLE_TYPE:
+                    return "Type of Land Transport";
+                case Enums.QuestionIdenfiers.TRANSPORT_TYPE_SEA_VESSLE_TYPE:
+                    return "Type of Sea Transport";
+                case Enums.QuestionIdenfiers.CARRIER_CD:
+                    return "Carrier Code";
+                case Enums.QuestionIdenfiers.CARRIER_NAME:
+                    return "Carrier Name";
+                case Enums.QuestionIdenfiers.FLIGHT_NO:
+                    return "Flight Number";
+                case Enums.QuestionIdenfiers.VESSLE_NAME:
+                    return "Vessel Name";
+                case Enums.QuestionIdenfiers.CRUISE_NAME:
+                    return "Cruise Name";
+                case Enums.QuestionIdenfiers.VEHICLE_NO:
+                    return "Vehicle Number";
+                case Enums.QuestionIdenfiers.ACCOMODATION_TYPE:
+                    return "Type of Accomodation";
+                case Enums.QuestionIdenfiers.ACCOMODATION_OTHER:
+                    return "Other Accodomation";
+                case Enums.QuestionIdenfiers.HOTEL_CD:
+                    return "Hotel Code";
+                case Enums.QuestionIdenfiers.HOTEL_NAME:
+                    return "Name of Hotel";
+                case Enums.QuestionIdenfiers.ADDR_HOUSE_NO:
+                    return "House No";
+                case Enums.QuestionIdenfiers.ADDR_FLOOR_NO:
+                    return "Floor No";
+                case Enums.QuestionIdenfiers.ADDR_UNIT_NO:
+                    return "Unit No";
+                case Enums.QuestionIdenfiers.ADDR_BUILDING_NAME:
+                    return "Building Name";
+                case Enums.QuestionIdenfiers.ADDR_STREET:
+                    return "Street No";
+                case Enums.QuestionIdenfiers.ADDR_POSTAL_CODE:
+                    return "Postal Code";
+                case Enums.QuestionIdenfiers.LAST_CITY_VISITED:
+                    return "Last city visited";
+                case Enums.QuestionIdenfiers.NEXT_CITY_VISITING:
+                    return "Next city visiting";
+                case Enums.QuestionIdenfiers.DIFFERENT_PASSPORT:
+                    return "Have you ever used a passport under different name to enter Singapore?";
+                case Enums.QuestionIdenfiers.DIFFERENT_PASSPORT_NAME:
+                    return "Name different from current passport";
+                case Enums.QuestionIdenfiers.TRAVEL_TO_OTHER_COUNTRIES:
+                    return "Have you travelled / Will you travel to Africa";
+                case Enums.QuestionIdenfiers.PROHIBIT_ENTER_SINGAPORE:
+                    return "Have you ever been prohibited from entering Singapore";
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Get the mapped string for text labels available across the app.
+        /// This method will check if their is any available mapping to Config Api data and picks the value from their.
+        /// Else it will use the local resource file to set the text label.
+        /// This function helps in re-using the string mapping across the app.
+        /// 
+        /// This mapper is required because some strings are picked from api data.
+        /// </summary>
+        /// <param name="textMapping">Label Identifier</param>
+        /// <param name="ExtramParams">this is used if we want string in a specific langauge, rather than picking it from settings value</param>
+        /// <returns></returns>
+        public static string GetMappedString(Enums.TextMapping textMapping, params string[] ExtramParams)
+        {
+            // Since the requirement is that app only shows different language text for label  text and not set the culture of the app.
+            // Every text entered as answer should be in English, hence we cannot change default keyboard and which will not change keyboard.
+            // So here we will check the language set by the user from Settings, and add the text here for all the languages.
+            // App will pick the text based on the language code.
+            
+            // For langauge selection dialog, since its a confirmation and langauge is not changed yet,
+            // still we want to show the text in user selected langauge, we have to check this and show text in value sent by the user.
+            if ((ExtramParams != null && ExtramParams.Length>0 && ExtramParams[0] == "zh-Hans") 
+                || (ExtramParams == null && Settings.GetValueOrDefault(Utils.PREFS_KEY_LANGUAGE_SELECTION) == "zh-Hans"))
+            {
+                switch (textMapping)
+                {
+                    case Enums.TextMapping.MAIN_PAGE_BTN_SELECT_LANGUAGE:
+                        return Resources.AppResources.LanguageButton;
+                    case Enums.TextMapping.MAIN_PAGE_BTN_SELECT_SERVICES:
+                        return Resources.AppResources.ServicesButton;
+                    case Enums.TextMapping.LANGAUGE_HEADER:
+                        return Resources.AppResources.LanguageTitle;
+                    case Enums.TextMapping.SERVICES_HEADER:
+                        return Resources.AppResources.MenuTitle;
+                    case Enums.TextMapping.PROFILE_LIST:
+                        return Resources.AppResources.profiles;
+                    case Enums.TextMapping.PROFILE_DETAILS:
+                        return Resources.AppResources.profileDetailsText;
+                    case Enums.TextMapping.ADD_PROFILE:
+                        return Resources.AppResources.ProfileTitle;
+                    case Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_PROFILE:
+                        return Resources.AppResources.ManageProfileButton;
+                    case Enums.TextMapping.SERVICES_PAGE_BTN_CREATE_DEC:
+                        return Resources.AppResources.CreateDeclarationButton;
+                    case Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_DEC:
+                        return Resources.AppResources.ManageDeclarationButton;
+                    case Enums.TextMapping.PROFILE_LIST_BTN_VIEW:
+                        return Resources.AppResources.viewButton;
+                    case Enums.TextMapping.PROFILE_LIST_BTN_CREATE:
+                        return Resources.AppResources.CreateButton;
+                    case Enums.TextMapping.NO_PROFILES:
+                        return Resources.AppResources.NoProfileInfo;
+                    case Enums.TextMapping.NO_PROFILES_FOUND:
+                        return "未找到文件资料";
+                    case Enums.TextMapping.FOOTER_TEXT:
+                        return "Singapore Immigration & CheckPoints Authority";
+                    case Enums.TextMapping.HEADER_TEXT_A:
+                        return "Immigration & CheckPoints Authority";
+                    case Enums.TextMapping.HEADER_TEXT_B:
+                        return "of Singapore";
+                    case Enums.TextMapping.LOADING_TEXT:
+                        return Resources.AppResources.LoadingInfo;
+                    case Enums.TextMapping.PROFILE_SAVE_SUCCESS_MESSAGE:
+                        return Resources.AppResources.ProfileSaveSuccessInfo;
+                    case Enums.TextMapping.DONE_TEXT:
+                        return Resources.AppResources.DoneButton;
+                    case Enums.TextMapping.SELECT_IMAGE:
+                        return "选择图片";
+                    case Enums.TextMapping.VALIDATION_MESSAGE:
+                        return "不允许有特殊字符";
+                    case Enums.TextMapping.INVALID_EMAIL:
+                        return "无效邮件";
+                    case Enums.TextMapping.MANDATORY_FIELD_MESSAGE:
+                        return "此信息必字段";
+                    case Enums.TextMapping.NUMBERS_ONLY_MESSAGE:
+                        return "只允许数字";
+                    case Enums.TextMapping.SELECT_TEXT:
+                        return "请选择";
+                    case Enums.TextMapping.HEADER_TEXT_C:
+                        return "Immigration &";
+                    case Enums.TextMapping.HEADER_TEXT_D:
+                        return "CheckPoints";
+                    case Enums.TextMapping.HEADER_TEXT_E:
+                        return "Authority";
+                    case Enums.TextMapping.HEADER_TEXT_F:
+                        return "of Singapore";
+                    case Enums.TextMapping.ELECTRONIC_CARD:
+                        return "ELECTRONIC ARRIVAL CARD";
+                    case Enums.TextMapping.SCAN_TEXT:
+                        return "扫描护照";
+                    case Enums.TextMapping.MANUAL_TEXT:
+                        return "手动输入";
+                    case Enums.TextMapping.DELETE_TEXT:
+                        return Resources.AppResources.DeleteButton;
+                    case Enums.TextMapping.SAVE_TEXT:
+                        return Resources.AppResources.SubmitButton;
+                    case Enums.TextMapping.UPDATE_TEXT:
+                        return Resources.AppResources.update_text;
+                    case Enums.TextMapping.EDIT_TEXT:
+                        return Resources.AppResources.EditButton;
+                    case Enums.TextMapping.PROFILE_CREATED_SUCCESSFULLY:
+                        return Resources.AppResources.profile_create_successfully;
+                    case Enums.TextMapping.PROFILE_UPDATED_SUCCESSFULLY:
+                        return Resources.AppResources.profile_update_successfully;
+                    case Enums.TextMapping.PROFILE_DELETED_SUCCESSFULLY:
+                        return Resources.AppResources.profile_delete_successfully;
+                    case Enums.TextMapping.DECLARATION_CREATED_SUCCESSFULLY:
+                        return Resources.AppResources.declaration_create_successfully;
+                    case Enums.TextMapping.DECLARATION_UPDATED_SUCCESSFULLY:
+                        return Resources.AppResources.declaration_update_successfully;
+                    case Enums.TextMapping.DECLARATION_DELETED_SUCCESSFULLY:
+                        return Resources.AppResources.declaration_delete_successfully;
+                    case Enums.TextMapping.DECLARATION_SAVED_SUCCESSFULLY:
+                        return Resources.AppResources.declaration_saved_successfully;
+                    case Enums.TextMapping.DECLARATION_SUBMITTED_SUCCESSFULLY:
+                        return "声明提交成功";
+                    case Enums.TextMapping.ADD_PASSENGER:
+                        return "加入下一位旅客";
+                    case Enums.TextMapping.LANGUAGE_SELECTION_TEXT:
+                        return "将语言设置为英语?";
+                    case Enums.TextMapping.YES_TEXT:
+                        return "是";
+                    case Enums.TextMapping.NO_TEXT:
+                        return "否";
+                    case Enums.TextMapping.ADD_TEXT:
+                        return "加入";
+                    case Enums.TextMapping.PREVIEW_TEXT:
+                        return "预览";
+                    case Enums.TextMapping.SUBMIT_TEXT:
+                        return "提交";
+                    case Enums.TextMapping.DE_NO:
+                        return "DE 号";
+                    case Enums.TextMapping.NAME:
+                        return "姓名";
+                    case Enums.TextMapping.NEXT_TEXT:
+                        return "下一个";
+                    case Enums.TextMapping.SUBMIT_ANNOTHER_DECLARATION_TEXT:
+                        return "提交另一个声明?";
+                }
+            }
+            switch (textMapping)
+            {
+                case Enums.TextMapping.MAIN_PAGE_BTN_SELECT_LANGUAGE:
+                    return Resources.AppResources.LanguageButton;
+                case Enums.TextMapping.MAIN_PAGE_BTN_SELECT_SERVICES:
+                    return Resources.AppResources.ServicesButton;
+                case Enums.TextMapping.LANGAUGE_HEADER:
+                    return Resources.AppResources.LanguageTitle;
+                case Enums.TextMapping.SERVICES_HEADER:
+                    return Resources.AppResources.MenuTitle;
+                case Enums.TextMapping.PROFILE_LIST:
+                    return Resources.AppResources.profiles;
+                case Enums.TextMapping.PROFILE_DETAILS:
+                    return Resources.AppResources.profileDetailsText;
+                case Enums.TextMapping.ADD_PROFILE:
+                    return Resources.AppResources.ProfileTitle;
+                case Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_PROFILE:
+                    return Resources.AppResources.ManageProfileButton;
+                case Enums.TextMapping.SERVICES_PAGE_BTN_CREATE_DEC:
+                    return Resources.AppResources.CreateDeclarationButton;
+                case Enums.TextMapping.SERVICES_PAGE_BTN_MANAGE_DEC:
+                    return Resources.AppResources.ManageDeclarationButton;
+                case Enums.TextMapping.PROFILE_LIST_BTN_VIEW:
+                    return Resources.AppResources.viewButton;
+                case Enums.TextMapping.PROFILE_LIST_BTN_CREATE:
+                    return Resources.AppResources.CreateButton;
+                case Enums.TextMapping.NO_PROFILES:
+                    return Resources.AppResources.NoProfileInfo;
+                case Enums.TextMapping.NO_PROFILES_FOUND:
+                    return "No Profile Found";
+                case Enums.TextMapping.FOOTER_TEXT:
+                    return "Singapore Immigration & CheckPoints Authority";
+                case Enums.TextMapping.HEADER_TEXT_A:
+                    return "Immigration & CheckPoints Authority";
+                case Enums.TextMapping.HEADER_TEXT_B:
+                    return "of Singapore";
+                case Enums.TextMapping.LOADING_TEXT:
+                    return Resources.AppResources.LoadingInfo;
+                case Enums.TextMapping.PROFILE_SAVE_SUCCESS_MESSAGE:
+                    return Resources.AppResources.ProfileSaveSuccessInfo;
+                case Enums.TextMapping.DONE_TEXT:
+                    return Resources.AppResources.DoneButton;
+                case Enums.TextMapping.SELECT_IMAGE:
+                    return "Select Picture";
+                case Enums.TextMapping.VALIDATION_MESSAGE:
+                    return "Special characters are not allowed";
+                case Enums.TextMapping.INVALID_EMAIL:
+                    return "Invalid Email";
+                case Enums.TextMapping.MANDATORY_FIELD_MESSAGE:
+                    return "This field is mandatory";
+                case Enums.TextMapping.NUMBERS_ONLY_MESSAGE:
+                    return "Only Numbers are allowed";
+                case Enums.TextMapping.SELECT_TEXT:
+                    return "Please Select";
+                case Enums.TextMapping.HEADER_TEXT_C:
+                    return "Immigration &";
+                case Enums.TextMapping.HEADER_TEXT_D:
+                    return "CheckPoints";
+                case Enums.TextMapping.HEADER_TEXT_E:
+                    return "Authority";
+                case Enums.TextMapping.HEADER_TEXT_F:
+                    return "of Singapore";
+                case Enums.TextMapping.ELECTRONIC_CARD:
+                    return "ELECTRONIC ARRIVAL CARD";
+                case Enums.TextMapping.SCAN_TEXT:
+                    return "Scan Passport";
+                case Enums.TextMapping.MANUAL_TEXT:
+                    return "Manual Entry";
+                case Enums.TextMapping.DELETE_TEXT:
+                    return Resources.AppResources.DeleteButton;
+                case Enums.TextMapping.SAVE_TEXT:
+                    return Resources.AppResources.SubmitButton;
+                case Enums.TextMapping.UPDATE_TEXT:
+                    return Resources.AppResources.update_text;
+                case Enums.TextMapping.EDIT_TEXT:
+                    return Resources.AppResources.EditButton;
+                case Enums.TextMapping.PROFILE_CREATED_SUCCESSFULLY:
+                    return Resources.AppResources.profile_create_successfully;
+                case Enums.TextMapping.PROFILE_UPDATED_SUCCESSFULLY:
+                    return Resources.AppResources.profile_update_successfully;
+                case Enums.TextMapping.PROFILE_DELETED_SUCCESSFULLY:
+                    return Resources.AppResources.profile_delete_successfully;
+                case Enums.TextMapping.DECLARATION_CREATED_SUCCESSFULLY:
+                    return Resources.AppResources.declaration_create_successfully;
+                case Enums.TextMapping.DECLARATION_UPDATED_SUCCESSFULLY:
+                    return Resources.AppResources.declaration_update_successfully;
+                case Enums.TextMapping.DECLARATION_DELETED_SUCCESSFULLY:
+                    return Resources.AppResources.declaration_delete_successfully;
+                case Enums.TextMapping.DECLARATION_SAVED_SUCCESSFULLY:
+                    return Resources.AppResources.declaration_saved_successfully;
+                case Enums.TextMapping.DECLARATION_SUBMITTED_SUCCESSFULLY:
+                    return "Declaration Successfully Submitted";
+                case Enums.TextMapping.ADD_PASSENGER:
+                    return "Add Next Passenger";
+                case Enums.TextMapping.LANGUAGE_SELECTION_TEXT:
+                    return "Set language display to English?";
+                case Enums.TextMapping.YES_TEXT:
+                    return "Yes";
+                case Enums.TextMapping.NO_TEXT:
+                    return "No";
+                case Enums.TextMapping.ADD_TEXT:
+                    return "Add";
+                case Enums.TextMapping.PREVIEW_TEXT:
+                    return "Preview";
+                case Enums.TextMapping.SUBMIT_TEXT:
+                    return "Submit";
+                case Enums.TextMapping.DE_NO:
+                    return "DE No";
+                case Enums.TextMapping.NAME:
+                    return "Name";
+                case Enums.TextMapping.NEXT_TEXT:
+                    return "Next";
+                case Enums.TextMapping.SUBMIT_ANNOTHER_DECLARATION_TEXT:
+                    return "Submit another declaration?";
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Method to return all the supported languages in the app.
+        /// </summary>
+        /// <returns></returns>
+        public static List<Language> GetSupportedLanguages()
+        {
+            return new List<Language>()
+            {
+                new Language()
+                {
+                    LanguageCode = "en",
+                    LanguageName = "English",
+                    LanguageTranslation = "Enter"
+                },
+                new Language()
+                {
+                    LanguageCode = "fr",
+                    LanguageName = "French",
+                    LanguageTranslation = "Entrer"
+                },
+                new Language()
+                {
+                    LanguageCode = "zh-Hans",
+                    LanguageName = "Chinese",
+                    LanguageTranslation = "输入"
+                },
+                new Language()
+                {
+                    LanguageCode = "ms",
+                    LanguageName = "Malay",
+                    LanguageTranslation = "Masukkan"
+                },
+                new Language()
+                {
+                    LanguageCode = "ko",
+                    LanguageName = "Korean",
+                    LanguageTranslation = "들어가다"
+                },
+                new Language()
+                {
+                    LanguageCode = "vi",
+                    LanguageName = "Vietnamese",
+                    LanguageTranslation = "vào"
+                },
+                new Language()
+                {
+                    LanguageCode = "de",
+                    LanguageName = "German",
+                    LanguageTranslation = "Eingeben"
+                },
+                new Language()
+                {
+                    LanguageCode = "ta",
+                    LanguageName = "Tamil",
+                    LanguageTranslation = "உள்ளிடவும்"
+                },
+                new Language()
+                {
+                    LanguageCode = "ar",
+                    LanguageName = "Arabic",
+                    LanguageTranslation = "أدخل"
+                },
+                new Language()
+                {
+                    LanguageCode = "ja",
+                    LanguageName = "Japanese",
+                    LanguageTranslation = "入る"
+                },
+            };
+        }
+    }
+}

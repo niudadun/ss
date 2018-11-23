@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFlow.Shared.Views.HeaderViewBig"
+              xmlns:y="clr-namespace:SmartFlow.Shared;assembly=SmartFlow.Shared">
+    <ContentView.Content>
+        <Grid BackgroundColor="{StaticResource SmartFlow_Header_Color}" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+            <StackLayout Grid.Row="0" BackgroundColor="{StaticResource SmartFlow_Header_Color}" Padding="0" x:Name="Header1">
+                <Grid Grid.Row="0" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                    <Image x:Name="HeaderBackgroundImage" Source="Asset22" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Aspect="Fill"/>
+                    <Grid VerticalOptions="CenterAndExpand">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="35*" />
+                            <ColumnDefinition Width="65*" />
+                        </Grid.ColumnDefinitions>
+                        <Image x:Name="IcaLogoName" Source="ica_logo" HorizontalOptions="End" VerticalOptions="CenterAndExpand"/>
+                        <StackLayout Grid.Column="1" Padding="5" VerticalOptions="CenterAndExpand" HorizontalOptions="Start">
+                            <Label x:Name="label5" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                            <Label x:Name="label6" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                            <Label x:Name="label7" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                            <Label x:Name="label8" FontSize="Large" TextColor="{StaticResource Text_Color}" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                        </StackLayout>
+                    </Grid>
+                </Grid>
+            </StackLayout>
+        </Grid>
+    </ContentView.Content>
+</ContentView>
